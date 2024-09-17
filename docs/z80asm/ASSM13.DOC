@@ -1,0 +1,810 @@
+
+
+6FFE 21436F  01740         LD    HL,SCORE
+7001 11446F  01750         LD    DE,SCORE1
+7004 0E05    01760         LD    C,5
+7006 3530    01770         LD    (HL),30H
+7008 EDB0    01780         LDIR           :INIT SCORE TO 30H
+700A C9      01790         PET
+             01800 :
+             01810 :
+700B 21A040  01820 DRWHWY  LD    HL,40A0H :FILL TOP HWY
+700E CD4170  01830         CALL  FILHWY
+7011 216048  01840         LD    HL,4860H :FILL MIDDLE HWY
+7014 CD4170  01850         CALL  FILHWY
+7017 212050  01860         LD    HL,5020H :FILL BOTTOM HWY
+701A CD4170  01870         CALL  FILHWY
+701D 21A046  01880         LD    HL,TOPHY1:RESERVE BUILT HIGHWAY
+7020 11A047  01890         LD    DE,TOPHY2
+7023 AF      01900         XOR   A
+7024 CD3870  01910         CALL  HIGHWY
+7027 212050  01920         LD    HL,BOTHY1
+702A 112051  01930         LD    DE,BOTHY2
+702D CD3870  01940         CALL  HIGHWY
+7030 21604B  01950         LD    HL,MIDHY1
+7033 11604C  01960         LD    DE,MIDHY2
+7036 3EC3    01970         LD    A,195    :BIN 11000011
+7038 0620    01980 HIGHWY  LD    B,32     :32*8 BITS
+703A 77      01990 HWYLOP  LD    (HL),A
+703B 12      02000         LD    (DE),A
+703C 23      02010         INC   HL
+703D 13      02020         INC   DE
+703E 10FA    02030         DJNZ  HWYLOP
+7040 C9      02040         RET
+             02050 :
+             02060 :
+7041 3EFF    02070 FILHWY  LD    A,OFFH
+7043 D9      02080         EXX
+7044 0620    02090         LD    B,32
+7046 D9      02100 FILHYL  EXX
+7047 E5      02110         PUSH  HL
+7048 0608    02120         LD    B,B
+704A 77      02130 FILCHR  LD    (HL),A
+704B 24      02140         INC   H
+704C 10FC    02150         DJNZ  FILCHR
+704E E1      02160         POP   HL
+704F 23      02170         INC   HL
+7050 D9      02180         EXX
+7051 10F3    02190         DJNZ  FILHYL
+7053 D9      02200         EXX
+7054 C9      02210         RET
+             02220 :
+             02230 :
+---------------------------------------------------------------
+INIT SCORE TO 30H - инициализировать счет значением 30H; 
+FILL TOP HWY - заполнить верхнюю часть шоссе; 
+FILL MIDDLE HWY - заполнить среднюю часть шоссе; 
+BFILL BOTTOM HWY - заполнить нижнюю часть шоссе; 
+REVERSE BUILT HIGHWY - обратить построенное изображение
+шоссе; 
+BIN - двоичное. 
+
+             02240 :********  LINEUP  ********
+             02250 :
+             02260 :     DRAW ALL FROGS LEFT ON THE SCREEN
+             02270 :
+             02280 :
+7055 3E01    02290 LINEUP  LD    A,1     :RIGHT FROG
+7057 327B6E  02300         LD    (FRGDIR),A
+705A 11D769  02310         LD    DE,FROG2:RIGHT FROG SHAPE
+705D 2A846E  02320         LD    HL,(FRGSTN):FROG STATION
+7060 3E04    02330         LD    A,4     :(PAPER 0)*8+(INC 4)
+7062 32566F  02340         LD    (ATT),A
+7065 3A826F  02350         LD    A,(NUMFRG):NUMBER OF FROG
+7068 A7      02360         AND   A       :TEST FOR NO FROG LEFT
+7069 C8      02370         RET   Z
+706A 47      02380         LD    B,A     :NUMBER OF FROG TIME
+706B C5      02390 DRAWLN  PUSH  BC
+706C D5      02400         PUSH  DE
+706D E5      02410         PUSH  HL
+706E CD7A70  02420         CALL  DRWFRG
+7071 E1      02430         POP   HL
+7072 D1      02440         POP   DE
+7073 2B      02450         DEC   HL
+7074 2B      02460         DEC   HL
+7075 2B      02470         DEC   HL
+7076 C1      02480         POP   DC
+7077 10F2    02490         DJNZ  DRAWLN
+7079 C9      02500         RET
+             02510 :
+             02520 :
+             02530 :********  DRWFRG  ********
+             02540 :
+             02550      SIMILAR TO DRAW ROUTINE
+             02560 :
+707A 3E02    02570 DRWFRG  LD    A,2     :TWO ROW FROG SHAPE
+707C 08      02580         EX    AF,AF'
+707D E5      02590         PUSH  HL      :STORE POS PTR
+707E E5      02600 FRGLP0  PUSH  HL
+707F 0E02    02610         LD    C,2     :COLUMN COUNT
+7081 E5      02620 FRGLP1  PUSH  HL
+7082 0608    02630         LD    B,B     :DRAW CHARACTER
+7084 1A      02640 FRGLP2  LD    A,(DE)
+---------------------------------------------------------------
+LINEUP - выстраивание; 
+DRAW  ALL  FROGS LEFT ON THE SCREEN - изобразить всех лягушек
+слева на экране; 
+RIGHT FROG - правая лягушка; 
+FROG STATION - лягушатник; 
+PAPER - бумага; 
+NUMBER OF FROG - количество лягушек; 
+TEST  FOR  NO  FROG  LEFT  -  проверка  количества оставшихся
+лягушек; 
+NUMBER OF FROG TIME - количество времени у лягушек; 
+DRAW FROG ROUTINE - программа изображения лягушек; 
+SIMILAR TO DRAW ROUTINE - программа, аналогичная DRAW; 
+TWO ROW FROG SHAPE - двухразрядное изображение лягушки; 
+STORE POS PTR - запись указателя позиции; 
+COLUMN COUNT - счетчик колонок; 
+DRAW CHARACTER - изображение литеры; 
+
+7085 77      02650         LD    (HL),A
+7086 13      02660         INC   DE
+7087 24      02670         INCZ  H
+7088 10FA    02680         DJNZ  FRGLP2  :NEXT BYTE OF THE CHAR
+708A E1      02690         POP   HL      :MOVE TO NEXT CHAR POS
+708B 23      02700         INC   HL      :DECR COLUMN COUNT
+708C 0D      02710         DEC   C
+708D 20F2    02720         JR    NZ,FRGLP1
+708F E1      02730         POP   HL      :ROW PRT
+7090 08      02740         EX    AF, AF'
+7091 3D      02750         DEC   A       :DEC LINES OF CHAR
+7092 0E20    02760         LD    C,32
+7094 280E    02770         JR    Z,FRGATT:LOAD FROG ATTRIBUTE
+7096 08      02780         EX    AF,AF'
+7097 A7      02790         AND   A
+7098 ED42    02800         SBC   HL,BC   :MOVE 32 CHAR/1 LINE UP
+709A CB44    02810         BIT   0,H     :TEST CROSS SCR SECTION
+709C 28E0    02820         JR    Z,FRGLP0
+709E 7C      02830         LD    A,H
+709F 67      02840         SUB   7       :UP ONE SCREEN SECTION
+70A1 67      02850         LD    H,A
+70A2 18DA    02860         JR    FRGLP0
+70A4 E1      02870 FRGATT  POP   HL      :POS PTR
+70A5 7C      02880         LD    A,H     :CONVERT TO ATTRIBUTE PTR
+70A6 E618    02890         AND   18H
+70A8 CB2F    02900         SRA   A
+70AA CB2F    02910         SRA   A
+70AC CB2F    02920         SRA   A
+70AE C658    02930         ADD   A,58H
+70B0 67      02940         LD    H,A
+70B1 3A656F  02950         LD    A,(ATT) :FILL FROG SHAPE ATTR
+70B4 77      02960         LD    (HL),A
+70B5 23      02970         INC   HL      :NEXT CHARACTER
+70B6 77      02980         LD    (HL),A
+70B7 ED42    02990         SBC   HL,BC   :ONE LINE UP
+70B9 77      03000         LD    (HL),A
+70BA 28      03010         DEC   HL      :NEXT CHAR LEFT
+70BB 77      03020         LD    (HL),A
+70BC C9      03030         RET
+             03040 :
+---------------------------------------------------------------
+NEXT BYTE OF CHAR - следующий байт литеры; 
+MOVE  TO  NEXT  CHAR  POS  - перемещение на позицию следующей
+литеры; 
+DECR COLUMN COUNT - уменьшение счетчика колонок. 
+ROW PTR - указатель ряда; 
+DEC LINES OF CHAR - уменьшение количества строк литеры; 
+LOAD FROG ATTRIBUTE - загрузить атрибуты лягушки; 
+MOVE  32 CHAR/1 LINE UP - переместиться на 32 литеры или на 1
+строку вверх; 
+TEST   CROSS  SCR  SECTION  -  проверить  пересечение  секций
+экрана; 
+UP ONE SCREEN SECTION - вверх на одну секцию экрана; 
+POS PTR - указатель позиции; 
+CONVERT   TO   ATTRIBUTE  PTR  -  преобразовать  в  указатель
+атрибутов; 
+FILL   FROG  SHAPE  ATTR  -  заполнить  атрибуты  изображения
+лягушки; 
+NEXT CHARACTER - следующая литера; 
+ONE LINE UP - на одну строку вверх; 
+NEXT CHAR LEFT - следующая слева литера; 
+
+             03050 :********  TECTRL  ********
+             03060 :
+             03070 :     TRAFFIC CONTROL ROUTINE
+             03080 :
+70BD 21706F  03090 TFCTRL  LD    HL,GENFLG:CHECK REGENERATION FLAG
+70C0 AF      03100         XOR   A
+70C1 BE      03110         CP    (HL)
+70C2 2802    03120         JR    Z,GENER :IF ZERO,TEST GENERATE
+70C4 35      03130         DEC   HL      :DECR GENERATION FLAG
+70C5 C9      03140         RET
+70C6 21256E  03150 GENER   LD    HL,JB1EXT:START OF TRAFFIC DB
+70C9 110C00  03160         LD    DE,12   :12 BYTE DATABASE
+70CC 0606    03170         LD    B,6     :6 DB PAIRS
+70CE BE      03180 TCTRLP  CP    (HL)    :TEST EXISTENCE
+70CF 2004    03190         JR    NZ,NSPACE
+70D1 CDD970  03200         CALL  REGEN
+70D4 C9      03210         RET
+70D5 19      03220 NSPACE  ADD   HL,DE
+70D6 10F6    03230         DJNZ  TCTRLP
+70D8 C9      03240         RET
+             03250 :
+             03260 :
+             03270 :********  REGEN  ********
+             03280 :
+             03290 :    REGENERATION OF TRAFFIC
+             03300 :     INPUT: HL=>DB PAIRS
+             03310 :
+70D9 E5      03320 REGEN   PUSH  HL
+70DA CDCC77  03330 RAND1   CALL  RANDNO  :RANDOM NUMBER ROUTINE
+70DD E607    03340         AND   7       :GENERATE RANDOM NUMBER
+70DF FE06    03350         CP    6       :FROM 0 TO 5
+70E1 30F7    03360         JR    NC,RAND1
+70E3 012159  03370         LD    BC,5921H:TWO CHAR TEST
+70E6 212059  03380         LD    HL,5920H:TEST JAM
+70E9 CB47    03390         BIN   0,A     :ODD NUMBER IS LEFT
+70EB 2804    03400         JR    Z,RTRAF :RIGHT TRAFFIC
+70ED 2EDF    03410         LD    L,0DEH
+70EF 0EDE    03420         LD    C,0DEH
+---------------------------------------------------------------
+TRAFFIC  CONTROL  ROUTINE  -  программа  управления движением
+транспорта; 
+CHECK REGENERATION FLAG - проверить флаг регенерации; 
+IF   ZERO   TEST   GENERATE  -  если  он  нулевой,  проверить
+генерацию; 
+DECR GENERATION FLAG - уменьшить флаг генерации; 
+START OF TRAFFIC DB - начало базы данных движения; 
+12 BYTE DATABASE - база данных из 12 байтов; 
+TEST EXISTENCE - проверить существование; 
+6 DB PAIRS - 6 пар баз данных; 
+REGENERATION ROUTINE - программа регенерации. 
+REGENERATION OF TRAFFIC - регенерация движения транспорта; 
+RANDOM NUMBER ROUTINE - программа случайных чисел; 
+GENERATE RANDOM NUMBER - генерация случайного числа; 
+FROM 0 TO 5 - от 0 до 5; 
+TWO CHAR TEST - проверка на две литеры; 
+TEST JAM - проверка на пробку; 
+ODD NUMBER IS LEFT - осталось нечетное число; 
+RIGHT TRAFFIC - движение вправо; 
+
+70F1 87      03430 RTRAF   ADD   A,A     :GET DBINDEX PTR IN DE
+70F2 5F      03440         LD    E,A
+70F3 0A      03450         LD    A,(BC)  :TEST 2 CHAR AHEAD
+70F4 86      03460         ADD   A,(HL)
+70F5 A7      03470         AND   A       :ZERO PAPER,ZERO INK
+70F6 2802    03480         JR    Z,LOADDB:IF 0,INITIALISE NEW OBJ
+70F8 E1      03490         POP   HL      :IF JAM, RETURN
+70F9 C9      03500         RET
+70FA 57      03510 LOADDB  LD    D,A     :A=0
+70FB 21896E  03520         LD    HL,DBINDEX:GET DB
+70FE 19      03530         ADD   HL,DE
+70FF 5E      03540         LD    E,(HL)  :GET CORR DATABASE
+7100 23      03550         INC   HL
+7101 56      03560         LD    D,(HL)
+7102 EB      03570         EX    DE,HL   :SOURCE
+7103 D1      03580         POP   DE      :DESTINATION
+7104 010C00  03590         LD    BC,12
+7107 EDB0    03600         LDIR
+7109 3E02    03610         LD    A,2     :SET REGENERATION FLAG
+710B 32706   03620         LD    (GENFLG),A:SKIP FOR 2 CYCLES
+710E C0      03630         RET
+             03640 :
+             03650 :
+             03660 :********  MOVTRF  ********
+             03670 :
+             03680 :    MOVE TRAFFIC ROUTINE
+             03690 :
+710F D9      03700 MOVTRF  EXX
+7110 21256E  03710         LD    HL,OB1EXT
+7113 110C00  03720         LD    DE,12
+7116 0606    03730         LD    B,6
+7118 E5      03740 MTRFLP  PUSH  HL
+7119 D9      03750         EXX
+711A E1      03760         POP   HL      :EXISTENCE
+711B 7E      03770         LD    A,(HL)  :SKIP WHEN NO EXIST
+711C A7      03780         AND   A
+711D CAA771  03790         JR    Z,NXTMOV
+7120 23      03800         INC   HL      :CYCLE COUNT
+7121 35      03810         DEC   (HL)    :DECR CYCLE COUNT
+7122 C2A771  03820         JR    NZ,NXTMOV
+7125 23      03830         INC   HL      :DIRECTION
+---------------------------------------------------------------
+GET  DBINDEX  PTR  IN  DE  -  получить указатель индекса базы
+данных в регистре; 
+TEST 2 CHAR AHEAD - проверьте на две литеры вперед; 
+ZERO PAPER,ZERO INK - обнулить бумагу, обнулить чернила; 
+IF  0  INITIALISE  NEW  OBJ  - если 0, инициализировать новый
+объект; 
+IF JAM, RETURN - если пробка, возврат; 
+GET CORR DATABASE - получить базу данных; 
+SOURCE - источник; 
+DESTIMATION - назначение ; 
+SET REGENERATION FLAG -установить флаг регенерации; 
+SKIP FOR 2 CYCLES -пропустить два цикла; 
+MOVE TRAFFIC ROUTINE - программа движения транспорта; 
+EXISTENCE существование; 
+SKIP WHEN NO EXIST - пропустить, когда не существует; 
+CYCLE COUNT - счетчик цикла. 
+
+7126 7E      03840         LD    A,(HL)  :0L TO R, 1R TO L
+7127 23      03850         INC   HL
+7128 23      03860         INC   HL
+7129 226E6F  03870         LD    (POSPTR),HL:POS PTR
+712C 5E      03880         LD    E,(HL)  :RESTORE POS
+712D 23      03890         INC   HL
+712E 56      03900         LD    D,(HL)
+712F 1C      03910         INC   E       :MOVE RIGHT
+7130 A7      03920         AND   A
+7131 2802    03930         JR    Z,LDPOS
+7133 1D      03940         DEC   E       :MOVE LEFT
+7134 1D      03950         DEC   E       :MOVE LEFT
+7135 ED536C6F03960 LDPOS   LD    (NEWPOS),DE
+7139 08      03970         EX    AF,AF'
+713A 010500  03980         LD    BC,5    :RESTORE OBJ LENGHT
+713D 09      03990         ADD   HL,BC
+713E 7E      04000         LD    A,(HL)  :ROW
+713F 32606F  04010         LD    (ROW),A
+7142 23      04020         INC   HL
+7143 7E      04030         LD    A,(HL)  :COLUMN
+7144 325F6F  04040         LD    (COLUMN),A
+7147 3D      04050         DEC   A
+7148 4F      04060         LD    C,A
+7149 08      04070         EX    AF,AF'
+714A A7      04070         AND   A
+714B EB      04090         EX    DE,HL
+714C 2008    04100         JR    NZ,RTOL :RIGHT TO LEFT
+714E 09      04110         ADD   HL,BC   :FIND HEAD OF TRUCK
+714F 7D      04120         LD    A,L     :LOB
+7150 FE40    04130         CP    40H     :TEST RIGHT EDGE
+7152 3046    04140         JR    NC,MOVEOK:SKIP TEST AHEAD IF OFF
+7154 1805    04150         JR    TESTAH  :TEST AHEAD
+7156 7D      04160 RTOL    LD    A,L     :NEW POS,AHEAD AS MELL
+7157 FEC0    04170         CP    0C0H    :TEST LEFT EDGE
+7159 383F    04180         JR    C,MOVEOK:SKIP TEST AHEAD
+715B 7C      04190 TESTAH  LD    A,H     :COVER TO ATTR
+715C E618    04200         AND   18H
+---------------------------------------------------------------
+0 L TO R, 1 TO L - 0 - слева направо, 1 - справа налево; 
+POS PTR - указатель позиции; 
+RESTORE POS - восстановление позиции;
+MOVE RIGHT - движение вправо;
+MOVE LEFT -движенеи влево;
+RESTORE OBJ LENGHT - восстановить длину объекта;
+ROW - ряд;
+COLUMN - колонка;
+TEST DIRECTION - проверить направление;
+RIGHT TO LEFT - справа налево;
+FIND HEAD OF TRUCK - найти перед грузовика;
+TEST RIGHT EDGE - проверить правый край;
+SKIP  TEST AHEAD IF OFF - если нет, пропустить проверку того,
+что впереди; 
+TEST AHEAD - проверка того, что впереди;
+NEW POS,AHEAD AS MELL - новая позиция, также вперед;
+TEST LEFT EDGE - проверить левый край;
+SKIP TEST AHEAD - пропустить проверку того, что впереди; 
+COVER TO ATTR - перевести в атрибуты;
+
+715E CB2F    04210         SRA   A
+7160 CB2F    04220         SRA   A
+7162 CB2F    04230         SRA   A
+7164 C658    04240         ADD   A,58H
+7166 67      04250         LD    H,A
+7167 012000  04260         LD    BC,32
+716A AF      04270         XOR   A
+716B 32716F  04280         LD    (JAMFLG),A:INITIALISE JAM FLAG
+716E 3A606F  04290         LD    A,(R0W)
+7171 0B      04300 TAHL0P  EX    AF,AF'
+7172 7E      04310         LD    A,(HL)  :RETRIEVE ATTR
+7173 E607    04320         AND   7
+7175 280E    04330         JR    Z,TFROG1:JUMP IF BLACK INK
+7177 FE04    04340         CP    4       :TEST FOR GREEN, FROG
+7179 2007    04350         JR    NZ,JAM1 :JAM IF NOT A FROG
+717B 3E01    04360         LD    A,1     :MOVE IF IT IS FROG
+717D 327C6F  04370         LD    (CRHFLG),A:SET FROG CRASH
+7180 1803    04380         JR    TEFROG1
+7182 32716F  04390         LD    (JANFLG),A:SET JAMFLG NON ZERO
+7185 A7      04400 TFROG1  AND   A
+7186 ED42    04410         SBC   HL,BC
+7188 0B      04420         EX    AF,AF'
+7189 3D      04430         DEC   A       :UPDATE ROW
+718A 20E5    04440         JR    NZ,TANLOP
+718C 3A716F  04450         LD    A,(JAMFLG):TEST TRAFFIK JAM
+718F A7      04460         AND   A
+7190 2808    04470         JR    Z,MOVEOK:MOVE IF NO JAM
+7192 D9      04480         EXX           :ELSE STOP MOVE ONE CYCLE
+7193 23      04490         INC   HL
+7194 34      04500         INC   (HL)    :LOAD 2 TO CYCLE COUNT
+7195 34      04510         INC   (HL)
+7196 2B      04520         DEC   HL
+7197 D9      04530         EXX
+7198 180D    04540         JR    NXTMOV
+719A 2A6F6F  04550 MOVEOK  LD    HL,(POSPTR):RENRIEVE PTR TO POS
+719D ED5B6C6F04560         LD    DE,(NEWPOS)
+71A1 73      04570         LD    (HL),E  :STORE NEWPOS IN DB
+71A2 23      04580         INC   HL
+71A3 72      04590         LD    (HL),D
+--------------------------------------------------------------------
+INITIALISE JAM FLAG - инициализировать флаг пробки;
+RETRIEVE ATTR - найти атрибуты;
+JUMP IF DLACK INK - переход, если чернила черные;
+TEST FOR GREEN, FROG - проверить, что лягушка зеленая;
+JAM IF NOT A FROG - пробка, если не лягушка;
+MOVE IT IS FROG - переместиться, если лягушка;
+SET FROG CRASH - установить столкновение лягушки;
+SET JAMFLG NON ZERO - установить JAMFLG не нулевым;
+UPDATE ROW -обновить ряд;
+TEST TRAFFIC JAM - проверить транспортную пробку;
+MOVE IF NO JAM  - переместиться, если пробки нет;
+ELSE STOP MOVE ONE CYCLE - в противном случае остановиться на
+один цикл; 
+LOAD 2 TO CYCLE COUNT - загрузить 2 в счетчик цикла;
+RETRIEVE PTR TO POS - найти указатель и поместить в позицию;
+STORE NEWPOS IN DB - записать новую позицию в базу данных;
+
+71A4 CDAF71  04600         CALL  MVCTRL  :MOVEMENT CONTROL
+71A7 D9      04610 NXTMOV  EXX
+71A8 19      04620         ADD   HL,DE
+71A9 05      04630         DEC   W
+71AA C21871  04640         JR    NZ,MTRFLP
+71AD D9      04650         EXX
+71AE C9      04660         RET
+             04670 :
+             04680 :********  MVCTRL  ********
+             04690 :
+             04700 :    TRAFFIC MOVEMENT CONTROL ROUTINE
+             04710 :
+71AF 2B      04720 MVCTRL  DEC   HL
+71B0 2B      04730         DEC   HL      :DE=>NEWPOS,HL=>DB PTR
+71B1 7B      04740         LD    A,E     :LOB POS
+71B2 E61F    04750         AND   1FH     :TEST EDGE
+71B4 2005    04760         JR    NZ,CHGRAF:CHANGE REAL ABS FLAG
+71B6 7E      04770         LD    A,(HL)
+71B7 3C      04780         INC   A
+71B8 E601    04790         AND   1
+71BA 77      04800         LD    (HL),A
+71BB 2B      04810 CHGRAF  DEC   HL      :PT DTR
+71BC 7E      04820         LD    A,(HL)
+71BD A7      04830         AND   A
+71BE 200F    04840         JR    NZ,TOLEFT:RIGHT TO LEFT
+71C0 7B      04850         LD    A,E
+71C1 E61F    04860         AND   1FH     :IF TO RIGHT AND ABC
+71C3 201B    04870         JR    NZ,DRWOBJ
+71C5 23      04880         INC   HL      :GET RAF
+71C6 7E      04890         LD    A,(HL)
+71C7 2B      04900         DEC   HL      :PT TO DIR
+71C8 A7      04910         AND   A       :IF ABSTRACT, DIES
+71C9 2015    04920         JR    NZ,DROBJ
+71CB D9      04930         EXX
+71CC 77      04940         LD    (HL),A  :SET NON EXISTENCE
+71CD D9      04950         EXX
+71CE C9      04960         RET
+71CF 3A5F6F  04970 TOLEFT  LD    A,(COLUMN)
+71D2 4F      04980         LD    C,A
+71D3 EB      04990         EX    DE,HL   :TEST AND OF OBJECT
+71D4 09      05000         ADD   HL,BC   :TOUCHES LEFT EDGE
+71D5 7D      05010         LD    A,L
+---------------------------------------------------------------
+MOVEMENT CONTROL - управление движением;
+TRAFFIC  MOVEMENT  CONTROL  ROUTINE  -  программа  управления
+движением транспорта; 
+LOB POS - позиция младшего байта;
+TEST EDGE - проверить край;
+CHANGE REAL ABS FLAG - проверить флаг реального (абстрактного);
+PT DTR - указатель;
+RIGHT TO LEFT - справа налево;
+IF TO RIGHT AND ABS - если направо и абстрактный;
+GET RAF - получить;
+IF ABSTRACT,DIES - если абстрактный, умирает;
+SET NON EXISTENCE - установить несуществование.
+TEST END OF OBJECT - проверить конец объекта;
+TOUCHES LEFT EDGE - касание левого края;
+
+71D6 FEC0    05020         CP    0C0H
+71D8 EB      05030         EX    DE,HL
+71D9 2005    05040         JR    NZ,DRWOBJ
+71DB D90     05050         EXX           :OBJECT NONEXIST AS IT
+                                         :MOVES OFF SCREEN
+71DC 3600    05060         LD    (HL),0
+71DE D9      05070         EXX
+71DF C9      05080         RET
+71E0 D9      05090 DRWOBJ  EXX
+71E1 7E      05100         LD    A,(HL)
+71E2 23      05110         INC   HL
+71E3 77      05120         LD    (HL),A  :REFILL CYCLE COUNT
+71E4 2B      05130         DEC   HL
+71E5 D9      05140         EXX
+71E6 23      05150         INC   HL
+71E7 E5      05160         PUSH  HL      :PT TO RAF
+71E8 23      05170         INC   HL
+71E9 23      05180         INC   HL
+71EA 23      05190         INC   HL
+71EB 5E      05200         LD    E,(HL)  :RETRIEVE SHAPE PTR
+71EC 23      05210         INC   HL
+71ED 56      05220         LD    D,(HL)
+71EE 23      05230         INC   HL
+71EF 4E      05240         LD    C,(HL)  :RETRIEVE ATTR PTR
+71F0 23      05250         INC   HL
+71F1 46      05260         LD    D,(HL)
+71F2 ED436AAF05270         LD    (ATTPTR),BC
+71F6 23      05280         INC   HL
+71F7 7E      05290         LD    A,(HL)
+71F8 32606F  05300         LD    (ROW),A
+71FB 23      05310         INC   HL
+71FC 7E      05320         LD    A,HL
+71FD 325F6F  05330         LD    (COLUMN),A
+7200 E1      05340         POP   HL
+7201 7E      05350         LD    A,(HL)
+7202 2A6C6F  05360         LD    HL,(NEWPOS)
+7205 CD0972  05370         CALL  DRAW
+7208 C9      05380         RET
+             05390 :
+             05400 :
+             05410 :
+             05420 :********  DRAW  ********
+             05430 :
+             05440 :     INPUT : HL=>START OF DISPLAY POS
+             05450 :             DE=>PTR TO SHAPE DB
+             05460 :             A=>POSITION REAL/ABSTRACT FLAG
+---------------------------------------------------------------
+             05470 :             C=>NO, OF COL TO BE DISPLAY
+             05480 :             COL PASS AS VAR
+             05490 :
+             05500 :     VAR     COLUMN ROW, ATTR, DRWPOS
+             05510 :             SKIP, FILL
+             05520 :
+             05530 :
+             05540 :       REG           :A,BC,DE,HL,A'
+             05550 :
+7209 CD9672  05560 DRAW    CALL  RSHAPE  :RETURN ROW/COL ATTPTR
+720C 3A606F  05570         LD    A,(ROW)
+720F 08      05580         EX    AF,AF'
+7210 D5      05590 LPO     PUSH  DE
+7211 E5      05600         PUSH  HL      :STORE LINE PTR
+7212 3A616F  05610         LD    A,(SKIP)
+7215 4F      05620         LD    C,A
+7216 0600    05630         LD    B,0
+7218 09      05640         ADD   HL,BC   :SKIP POS PTR
+7219 87      05650         ADD   A,A     :MULTIPLE OF 8 BYTES
+721A 87      05660         ADD   A,A
+721B 87      05670         ADD   A,A
+721C 4F      05680         LD    C,A     :SKIP SHAPE PTR
+721D EB      05690         EX    DE,HL
+721E 09      05700         ADD   HL,BC
+721F EB      05710         EX    DE,HL
+7220 CB44    05720         BIT   0,H     :CROSS SCREEN SECTION
+7222 2804    05730         JR    Z,NOSKIP
+7224 3E07    05740         LD    A,7     :IF YES, MOVE UP
+7226 84      05750         ADD   A,H
+7227 67      05760         LD    H,A
+7228 3A626F  05770 NOSKIP  LD    A,(FILL)
+722B A7      05780         AND   A
+722C 2811    05790         JR    Z,NXT
+722E 4F      05800         LD    C,A     :COLUMN TO BE FILLED
+722F E5      05810 LP1     PUSH  HL      :FILL CHARACTER
+7230 0608    05820         LD    B,8
+7232 1A      05830 LP2     LD    A,(DE)  :FILL CHARACTER BYTE
+7233 77      05840         LD    (HL),A
+7234 13      05850         INC   DE
+7235 24      05860         INC   H
+7236 10FA    05870         DJNZ  LP2
+7238 E1      05880         POP   HL
+---------------------------------------------------------------
+OF COL TO BE DISPLAY - количество выводимых колонок;
+PASS AS VAR - передается как переменная;
+VAR - переменные.
+RETURN   ROW/COL  ATTPTR  -  возвратить  указатель  атрибутов
+ряда/колонки; 
+STORE LINE PTR - записать указатель строки;
+SKIP POS PTR - указатель пропуска позиции;
+MULTIPLE OF 8 BYTES - кратно 8 байтам;
+SKIP SHAPE PTR - указатель пропуска изображения;
+CROSS SCREEN SECTION? - пересечение секции экрана?;
+IF YES,MOVE UP - если да, переместиться вверх;
+COLUMN TO BE FILLED - колонка для заполнения;
+FILL CHARACTER - литера-заполнитель;
+FILL CHARACTER BYTES - байты литеры-заполнителя;
+
+7239 0D      05890         DEC   C
+723A 2803    05900         JR    Z,NXT
+723C 23      05910         INC   HL      :NEXT CHARACTER
+723D 18F0    05920         JR    LP1
+723F 08      05930 NXT     EX    AF,AF'
+7240 E1      05940         POP   HL      :RESTORE LINE PTR
+7241 D1      05950         POP   DE      :SHAPE DB PTR
+7242 3D      05960         DEC   A       :UPDATE ROW COUNT
+7243 281A    05970         JR    Z,LDATTR
+7245 08      05980         EX    AF,AF'
+7246 A7      05990         AND   A       :CLEAR CARRY
+7247 0E20    06000         LD    C,20H
+7249 ED42    06010         SBC   HL,BC   :ONE LINE UP
+724B CB44    06020         BIT   0,H     :CROSS SCREEN SECTION?
+724D 2804    06030         JR    Z,MDDDB
+724F 7C      06040         LD    A,H
+7250 D607    06050         SUB   7
+7252 67      06060         LD    H,A
+7253 3A5F6F  06070 MDDDB   LD    A,(COLUMN)
+7256 87      06080         ADD   A,A
+7257 87      06090         ADD   A,A
+7258 87      06100         ADD   A,A     :UPDATE SHAPE DB
+7259 4F      06110         LD    C,A
+725A EB      06120         EX    DE,HL
+725B 09      06130         ADD   HL,BE
+725C EB      06140         EX    DE,HL
+725D 1BB1    06150         JR    LP0
+725F 2A636F  06160 LDATTR  LD    HL,(ATTPOS)
+7262 ED5B6A6F06170         LD    DE,(ATTPOS)
+7266 3A606F  06180         LD    A,(ROW)
+7269 08      06190 ATROW   EX    AF,AF'
+726A D5      06200         PUSH  DE
+726B E5      06210         PUSH  HL
+726C 3A616F  06220         LD    A,(SKIP)
+726F 4F      06230         LD    C,A
+7270 0600    06240         LD    B,0
+7272 09      06250         ADD   HL,BC   :SKIP ATTRIBUTE FILE
+7273 EB      06260         EX    DE,HL
+7274 09      06270         ADD   HL,BC   :SKIP ATTRIBUTE DATABASE
+7275 EB      06280         EX    DE,HL
+7276 3A626F  06290         LD    A,(FILL)
+7279 A7      06300         AND   A
+727A 2807    06310         JR    Z,SKIPAT:SKIP ATTRIBUTE
+727C 47      06320         LD    B,A     :FILL ATTRIBUTES
+---------------------------------------------------------------
+NEXT CHARACTER - следующая литера;
+RESTORE LINE PTR - восстановить указатель строки;
+SHAPE DB PTR - указатель базы данных изображений;
+UPDATE ROW COUNT - счетчик обновления рядов;
+CLEAR CARRY - очистить перенос;
+ONE LINE UP - на одну строку вверх;
+CROSS SCREEN SECTION? - пересечение секции экрана?
+UPDATE SHAPE DB - обновить базу данных изображений;
+SKIP ATTRIBUTE FILE - пропустить файл атрибутов;
+SKIP ATTRIBUTE DATABASE - пропустить базу данных атрибутов;
+SKIP ATTRIBUTE - пропустить атрибуты ;
+FILL ATTRIBUNES - заполнить атрибуты
+
+727D 1A      06330 ATTR2   LD    A,(DE)
+727E 77      06340         LD    (HL),A
+727F 23      06350         INC   HL
+7280 13      06360         INC   DE
+7281 10FA    06370         DJNZ  ATTR2
+7283 E1      06380 SKIPAT  POP   HL
+7284 D1      06390         POP   DE
+7285 3A5F6F  06400         LD    A,(COLUMN)
+7288 A7      06410         AND   A       :CLEAR CARRY
+7289 0E20    06420         LD    C,20H
+728B ED42    06430         SBC   HL,BC   :NEXT ATTRIBUTE LINE UP
+728D 4F      06440         LD    C,A
+728E EB      06450         EX    DE,HL
+728F 09      06460         ADD   HL,BC   :UPDATE ATTRIBUTE DB
+7290 EB      06470         EX    DE,HL
+7291 08      06480         EX    AF,AF'
+7292 3D      06490         DEC   A
+7293 20D4    06500         JR    NZ,ATROW
+7295 C9      06510         RET
+             06520 :
+             06530 :
+             06540 :********  RSHAPE  ********
+             06550 :
+             06560 :    INPUT: HL=>POSITION
+             06570 :           A =>REAL/ABSTRACT FLAG
+             06580 :           DE=>SHAPE PTR
+             06590 :           COLUMN
+             06600 :
+             06610 :    OUTPUT: SKIP,FILL,ATTPOS
+             06620 :
+7296 E5      06630 RSHAPE  PUSH  HL
+7297 08      06640         EX    AF,AF'  :REAL SHAPE
+7298 261F    06650         LD    H,1FH
+729A 7C      06660         LD    A,H
+729B A5      06670         AND   L       :TRAP LOWER 5 BITS
+729C 6F      06680         LD    L,A
+729D 7C      06690         LD    A,H
+729E 95      06700         SUB   L       :SUBTRACT FROM IFH
+729F 3C      06710         INC   A
+72A0 A4      06720         AND   H       :ADJUST FOR ZERO DIFF
+72A1 6F      06730         LD    L,A
+72A2 08      06740         EX    AF,AF'
+72A3 A7      06750         AND   A       :0=>ABSTRACT, 1=>REAL
+72A4 3A5F6F  06760         LD    A,(COLUMN)
+72A7 200A    06770         JR    NZ,REAL
+---------------------------------------------------------------
+CLEAR CARRY - очистить перенос;
+NEXT ATTRIBUTE LINE UP - выстроить следующие атрибуты;
+UPDATE ATTRIBUTE DB - обновить базу данных атрибутов;
+REAL/ABSTRACT FLAG - флаг реальный/абстрактный;
+SKIP - пропуск;
+FILL - заполнение;
+ATTPOS - позиция атрибута.
+REAL SHAPE - реальное изображение;
+TRAP LOWER 5 BITS - ловушка для 5 битов;
+SUBTRACT FROM IFH - вычесть из IFH;
+ADJUST FOR ZERO DIFF - подкорректировать для нулевой разницы;
+
+72A9 95      06780         SUB   L
+72AA 32626F  06790         LD    (FILL),A
+72AD 7D      06800         LD    A,L     :RELOAD ABS DIFF
+72AE 32616F  06810         LD    (SKIP),A
+72B1 1811    06820         JR    CALL  ATT
+72B3 BD      06830 REAL    CP    L       :TAKE MIN OF COL/FILL
+72B4 3807    06840         JR    C,TODBIG:FILL MORE THEN COL
+72B6 7D      06850         LD    A,L
+72B7 A7      06860         AND   A
+72BB 2003    06870         JR    NZ,TODBIG
+72BA 3A5F6F  06880         LD    A,(COLUMN)
+72BD 32626F  06890 TODBIG  LD    (FILL),A
+72C0 AF      06900         XOR   A
+72C1 32616F  06910         LD    (SKIP),A
+72C4 E1      06920 CALATT  POP   HL      :CALCULATE ATT PTR
+72C5 E5      06930         PUSH  HL
+72C6 7C      06940         LD    A,H
+72C7 E618    06950         AND   18H
+72C9 CB2F    06960         SRA   A
+72CB CB2F    06970         SRA   A
+72CD CB2F    06980         SRA   A
+72CF C658    06990         ADD   A,58H
+72D1 67      07000         LD    H,A
+72D2 22636F  07010         LD    (ATTPOS),HL
+72D5 E1      07020         POP   HL
+72D6 C9      07030         RET
+             07040 :
+             07050 :
+72D7 210040  07060 CLRSCR  LD    HL,4000H:HL=>START OF SCREEN
+72DA 110140  07070         LD    DE,4001H
+72DD 01FF17  07080         LD    BC,6143 :SIZE OF SCREEN 17FFH
+72E0 AF      07090         XOR   A       :BLANK SCREEN
+72E1 77      07100         LD    (HL),A
+72E2 EDB0    07110         LDIR
+72E4 210058  07120         LD    HL,5800H:SET FIRST LINE FOR SCORE
+72E7 110158  07130         LD    DE,5801H:OF ATTRIBUTE FILE
+72EA 011F00  07140         LD    BC,31
+72ED 3607    07150         LD    HL,7    :INK SEVEN
+72EF EDB0    07160         LDIR
+72F1 212058  07170         LD    HL,5802H:SET ATTRIBUTE
+72F4 112158  07180         LD    DE,5821H:START FROM SECOND LINE
+72F7 01DF02  07190         LD    BC,735
+72FA 77      07200         LD    (HL),A  :(PAPER 0)*B+(INK 0)
+72FB EDB0    07210         LDIR
+---------------------------------------------------------------
+RELOAD ABS DIFF -перезагрузить абсолютную разницу;
+TAKE MIN OF COL/FILL - взять минимум из колонки и заполнителя;
+FILL MORE THEN COL - заполните больше колонки;
+CALCULATE ATT PTR - вычислить указатель атрибутов;
+START OF SCREEN - начало экрана;
+SIZE OF SCREEN 17FFH - размер экрана  17FFH;
+BLANK SCREEN - очистить экран;
+SET FIRST LINE FOR SCORE - установить первую строку для счета;
+OF ATTRIBUTE FILE - файл атрибутов;
+INK SEVEN - чернила номер 7;
+SET ATTRIBUTE - установить атрибуты;
+START FROM SECOND LINE - начать со второй строки.
+
+
+72FD 21A058  07220         LD    HL,58A0H:SET HIGHWAY
+7300 116059  07230         LD    DE,5960H:HIGH,MIDDLE,BOTTOM
+7303 01205A  07240         LD    BC,5A20H
+7306 3E38    07250         LD    A,56    :(PAPER 7)*8+(INK 0)
+7308 D9      07260         EXX
+7309 0620    07270         LD    B,32    :FILL ONE LINE
+730B D9      07280 HWYATT  EXX
+730C 77      07290         LD    (HL),A
+730D 12      07300         LD    (DE),A
+730E 02      07310         LD    (BC),A
+730F 23      07320         INC   HL
+7310 13      07330         INC   DE
+7311 03      07340         INC   BC
+7312 D9      07350         EXX
+7313 10F6    07360         DJNZ  HWYATT
+7315 D9      07370         EXX
+7316 C9      07380         RET
+             07390 :
+             07400 :
+7317 E5      07410 SHAPE   PUSH  HL      :SAVE HL PTR
+7318 3A7B6E  07420         LD    A,(FRGDIR)
+731B 87      07430         ADD   A,A
+731C 21AF69  07440         LD    HL,FRGSHP
+731F 1600    07450         LD    D,0
+7321 5F      07460         LD    E,A
+7322 19      07470         ADD   HL,DE   :PTR TO POS OF SHAPE
+7323 5E      07480         LD    E,(HL)  :DE RETURN SHAPE PTR
+7324 23      07490
+7325 56      07500
+7326 E1      07510
+7327 C9      07520
+             07530 :
+             07540 :
+             07550 :********  DISASC  ********
+             07560 :
+             07570 :   DISPLAY ASCII VALUE FROM CHARACTER SET
+             07580 :   NP:___STORE DE,THE MESSAGE POINTER
+             07590 :         HL STAYS THE SAME AFTER DISPLAY
+             07600 :         USED BC REGISTER AS WELL
+             07610 :
+             07620 :
+7328 C5      07630 DISASE  PUSH  BC
+7329 D5      07640         PUSH  DE
+732A E5      07650         PUSH  HL
+---------------------------------------------------------------
+SET HIGHWAY - установить шоссе;
+FILL ONE LINE - заполнить одну строку;
+SAVE HL PTR - записать указатель в HL;
+PTR TO POS OF SHAPE - указатель позиции изображения;
+DE  RETURN  SHAPE  PTR  -  в  регистре возвращается указатель
+изображения; 
+DISPLAY ASCII VALUE FROM CHARACTER SET - выдача значения кода
+ASCII из набора литер; 
+NP:___STORE  DE,  THE MESSAGE POINTER HL STAYS THE SAME AFTER
+DIS-  PLAY  USED BC REGISTER AS WELL - замечание: записать DE
+указатель  сообщения остается тем же самым после того,как для
+выдачи был также использован регистр BC; 

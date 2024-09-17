@@ -1,0 +1,813 @@
+
+
+             SCORE                     HIGH SCORE
+
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ ____                             _______________
+     I                           I               I
+     I__                         I               I__
+ ____I__I          \ /           I_______________I__I
+  O    O           <O>             O O        O    O
+ ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ / \ ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ
+             _______________
+            I               I
+          __I               I
+         I__I_______________I
+          O    O        O O
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  \ / \ / \ / \ /
+  <O> <O> <O> <O>
+  / \ / \ / \ / \
+
+
+          ЭТАП 6 ПРОГРАММЫ FREEWAY FROG (управление)
+
+         На  этом этапе мы разрабатываем программу управления
+всей программой. 
+         Основной  момент  в  управлении  состоит  в том, что
+когда  игра  закончена,  максимальный счет обновляется и игра
+автоматически повторно запускается. 
+         На любом цикле пользователь может экстренно прервать
+игру, нажав клавишу пробела. 
+         Вы  обнаружите,  что  строки распечатки с 180 по 440
+очень напоминают разрабатываемую нами тестовую программу. 
+         Остальные программы таковы: 
+
+
+ NAME    LINE#   FROM(H)   TO(H)   FROM(D)   TO(D)   CHECKSUM
+ ----    -----   -------   -----   -------   -----   --------
+ RESPC    9560    7450H    74C1H    29776    29889     11011
+ POLICE   7930    734AH    73DEH    29514    29662     15769
+ STRPC    8830    73DFH    744FH    29663    29775     10615
+
+
+         Теперь  введите  эти программы в память. Запишите их
+вместе  с  модулем  "лягушка"  и  запишите  весь  модуль  как
+"лягушка". 
+         Выполните  программу с ячейки 27000 вместо 32000 и у
+вас будет работать вся программа. 
+
+ OVER
+ ----    Сравнение всех разрядов HISCR и SCORE + 1.
+         Для первого несовпадающего разряда:
+         если разряд HISC`R меньше, заменить
+         разряд HISCR на SCORE+1.
+         В противном случае
+         возврат.
+         Возврат.
+
+         Примите  поздравления,  и  я надеюсь, что разработка
+программы FREEWAY FROG доставила вам радость. 
+
+         SCORE  1140                HIGH SCORE  1140
+
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+ Q              Q       Q                   ____________
+ O\             O\      O\                 /  I         \
+ GGV          -GGGV   -GGGV               I___I__________\
+  O            O O     O O                  O          O
+ ЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖЖ
+                        ___________        __________
+                       /        I  \      /       I  \
+                      /_________I___I    /________I___I
+                         O        O        O         O
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  \ / \ / \ / \ / \ /
+  <O> <O> <O> <O> <O>
+  / \ / \ / \ / \ / \
+
+             00100 :********** FREEWAY FROG **********
+             00110 :
+             00120 :
+             00130 :
+             00140 :
+             00150 :
+6978         00160       ORG  27000
+             00170 :
+6978 F3      00180 START DI              : DISAPLE BASIC SYSTEM
+                                         : AFFECTING
+6979 D9      00190       EXX             : THE KEYBOARD SCANNING
+697A E5      00200       PUSH HL         : PRESERVE THE 'HL'
+                                         : REGISTER PAIR
+697B D9      00210       EXX             : POP BACK BEFORE RETURN
+697C CD836F  00220 AGAIN CALL INIT       : INITIALISATION
+697F CDBD70  00230 MOVE  CALL TFCTRL     : TRAFFIC CONTROL ROUTINE
+6982 CD5074  00240       CALL RESPC      : RESTORE UNDERNEATH
+6985 CD0F71  00250       CALL MOVTRF     : MOVE TRAFFIC
+6988 CD4A73  00260       CALL POLICE     : POLICE CAR ROUTINE
+698B CDC274  00270       CALL FROG       : FROG MODULE
+698E CD1D77  00280       CALL CALSCR     : CALCULATE AND DISPLAY
+                                         : SCORE
+6991 CD8777  00290       CALL SIREN      : SIREN OR DELAY
+6994 3A776F  00300       LD   A,(GAMFLG) : FINISH WHEN NO FROG
+6997 AF      00310       AND
+---------------------------------------------------------------
+DISAPLE  BASIC  SYSTEM AFFECTING - блокировка влияния системы
+Бейсмк; 
+THE KEYBOARD SCANNING - сканирование клавиатуры; 
+PRESERVE THE 'HL' REGISTER PAIR - сохранение пары регистров; 
+POPBACK BEFORE RETURN - выталкивание назад перед возвратом; 
+TRAFFIC  CONTROL  ROUTINE  -  программа  управления движением
+транспорта; 
+RESTORE  UNDERNEATH  - восстановление того, что оказалось под
+изображением; 
+MOVE TRAFFIC - перемещение транспорта. 
+POLICE CAR ROUTINE - программа полицейской машины; 
+FROG MODULE - модуль "лягущка"; 
+CALCULATE AND DISPLAY SCORE - введение и выдача счета; 
+SIREN OR DELAY - звук сирены или задержка; 
+FINISH WHEN NO FROG - завершение при отсутствии лягушки; 
+
+
+6998 2005    00320       JR   NZ,CONTIN
+699A CDDE77  00330       CALL OVER       : HIGHSCORE MANAGEMENT
+699D 18DD    00340       JR   AGAIN      : NEW GAME AGAIN
+699F 3E7F    00350       LD   A,7FH      : TRAP SPACE KEY PRESSED
+69A1 DBFE    00360       IN   O,(0FEH)   : SCAN KEYBOARD
+69A3 E601    00370       AND  1
+69A5 20D8    00380       JR   NZ,MOVE
+69A7 CDFE77  00390       CALL FINAL      : RESET SCREEN AND BORDER
+                                         : COLOR
+69AA D9      00400       EXX
+69AB E1      00410       POP  HL         : RETRIEVE 'HL'
+69AC D9      00420       EI              : ENABLE INTERRUPTS
+69AD F8      00440       RET             : RETURN TO BASIC SYSTEM
+69AE C9      00450 :
+             00460 :
+69AF         00470
+             00100 :********** FROGDB/ASM **********
+             00110 :
+69AF B769    00120 FRGSHP DEFW FROG1     : UP FROG
+69B1 D769    00130        DEFW FROG2     : RIGHT FROG
+69B3 F769    00140        DEFW FROG3     : DOWN FROG
+69B5 176A    00150        DEFW FROG4     : LEFT FROG
+69B7 6F      00160 FROG1  DB   111,15,31,159,220,216,120,48
+     0F 1F 9F DC D8 78 30
+69BF F6      00170        DB   246,240,248,249,59,27,30,12
+     F0 F8 F9 3B 1B 1E 0C
+69C7 00      00180        DB   0,1,35,37,111,79,223,255
+     01 23 25 6F 4F DF FF
+69CF 00      00190        DB   0,128,196,164,246,242,251,255
+     80 C4 A4 F6 F2 FB FF
+69D7 1F      00200        DB   31,31,31,127,252,193,113,56
+     1F 1F 7F FC C1 71 38
+69DF FE      00210        DB   254,244,248,240,192,156,240,192
+     F4 F8 F0 C0 9C F0 C0
+69E7 38      00220        DB   56,113,193,252,127,31,31,31
+     71 C1 FC 7F 1F 1F 1F
+69EF C0      00230        DB   192,240,156,192,240,248,244,254
+     F0 9C C0 F0 F8 F4 FE
+69F7 FF      00240        DB   255,223,79,111,37,35,1,0
+     DF 4F 6F 25 23 01 00
+69FF FF      00250        DB   255,251,242,246,164,196,128,0
+     F8 F2 F6 A4 C4 80 00
+6A07 30      00260        DB   48,120,216,220,159,31,15,111
+     78 08 DC 9F 1F 0F 6F
+---------------------------------------------------------------
+HIGHSCORE MANAGEMENT - работа с максимальным счетом; 
+NEW GAME AGAIN - начало новой игры; 
+TRAP  SPACE  KEY  PRESSED  -  прерывание  при нажатии клавиши
+пробела; 
+SCAN KEYBOARD - сканирование клавиатуры; 
+RESET  SCREEN  AND  BORDER  COLOUR  -  сброс  экрана  и цвета
+окаймления; 
+RETRIEVE - поиск; 
+ENABLE INTERRUPTS - разблокировка прерываний; 
+RETURN TO BASIC SYSTEM - возврат в систему Бейсик; 
+UP FROG - изображение лягушки, двигающейся вверх; 
+RIGHT FROG - изображение лягушки, двигающейся вправо; 
+DOWN FROG - изображение лягушки, двигающейся вниз; 
+LEFT FROG - изображение лягушки, двигающейся влево. 
+
+6A0F 0C      00270        DB   12,30,27,59,249,248,240,246
+     1E 1B 3B F9 F8 F0 F6
+6A17 7F      00280 FROG4  DB   127,47,31,15,3,57,16,3
+     2F 1F 0F 03 39 0F 03
+6A1F F0      00290        DB   240,240,248,254,63,131,142,28
+     F0 FB FE 3F 83 8E 1C
+6A27 03      00300        DB   3,15,57,3,15,31,47,127
+     0F 39 03 0F 1F 2F 7F
+6A2F 1C      00310        DB   28,142,131,63,254,248,240,240
+     8E 83 3F FE FB F0 F0
+             00320 :
+             00330 :
+6A37 00      00340 LBIKE  DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6A3F 1F      00350        DB   31,63,115,81,169,112,112,32
+     3F 73 51 A9 70 70 20
+6A47 FE      00360        DB   254,252,252,234,213,206,14,4
+     FC FC EA D5 CE 0E 04
+6A4F 00      00370        DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6A57 00      00380        DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6A5F 01      00390        DB   1,3,1,0,3,4,14,31
+     03 01 00 03 04 0E 1F
+6A67 80      00400        DB   128,192,192,224,224,112,119,255
+     C0 C0 E0 E0 70 77 FF
+6A6F 00      00410        DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+             00420 :
+6A77 00      00430 LBATT  DB   0,7,7,0
+     07 07 00
+6A7B 00      00440        DB   0,7,7,0
+     07 07 00
+             00450 :
+6A7F 00      00460 RBIKE  DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6A87 7F      00470        DB   127,63,63,87,171,115,112,32
+     3F 3F 57 AB 73 70 20
+6A8F FB      00480        DB   248,252,206,138,149,14,14,4
+     FC CE 8A 95 0E 0E 04
+6A97 00      00490        DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6A9F 00      00500        DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6AA7 01      00510        DB   1,3,3,7,7,14,238,255
+     03 03 07 07 0E EE FF
+6AAF 80      00520        DB   128,192,128,0,192,32,112,248
+     C0 80 00 C0 20 70 F8
+6AB7 00      00530        DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+             00540 :
+             00550 :
+6ABF 00      00560 RBATT  DB   0,7,7,0
+     07 07 00
+6AC3 00      00570        DB   0,7,7,0,
+     07 07 00
+             00580 :
+             00590 :
+6B93 00      00900 RCATT  DB   0,2,2,2,2,0
+     02 02 02 02 00
+6B99 00      00910        DB   0,2,2,0,0,0
+     02 02 00 00 00
+             00920 :
+             00930 :
+6B9F 00      00940 LTRUCK DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6BA7 1F      00950        DB   31,31,31,62,61,59,3,1,
+     1F 1F 3E 3D 3B 03 01
+6BAF F8      00960        DB   248,252,254,127,184,216,192,128
+     FC FE 7F B8 D8 C0 80
+6BB7 FF      00970        DB   255,255,255,255,6,15,15,6
+     FF FF FF 06 0F 0F 06
+6BBF FF      00980        DB   255,255,255,0,0,0,0,0
+     FF FF 00 00 00 00 00
+6BC7 FF       00990       DB   255,255.255,0,0,0,0,0
+     FF FF 00 00 00 00 00
+6BCF FF       01000       DB   255,255,255,0,6,15,15,6
+     FF FF 00 06 0F 0F 06
+6BD7 FE       01010       DB   254,254,254,4,50,122,122,48
+     FE FE 04 32 7A 7A 30
+6BDF 00       01020       DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6BE7 00       01030       DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6BEF 00       01040       DB   0,0,7,9,17,17,31,31
+     00 07 09 11 11 1F 1F
+6BF7 02       01050       DB   2,2,250,250,254,252,252,248
+     02 FA FA FE FC FC F8
+6BFF FF       01060       DB   255,255,255,255,255,255,255,255
+     FF FF FF FF FF FF FF
+6C07 FF       01070       DB   255,255,255,255,255,255,255,255
+     FF FF FF FF FF FF FF
+6C0F FF       01080       DB   255,255,255,255,255,255,255,255
+     FF FF FF FF FF FF FF
+6C17 FF       01090       DB   255,255,255,255,255,255,255,255
+     FF FF FF FF FF FF FF
+6C1F FE       01100       DB   254,254,254,254,254,254,254,254
+     FE FE FE FE FE FE FE
+6C27 00       01110       DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6C2F 00       01120       DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6C37 00       01130       DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6C3F 00       01140       DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6C47 00       01150       DB   0,0,0,0,0,255,255,255
+     00 00 00 00 АА АА АА
+6С4А 00       01160       DB   0,0,0,0,0,255,255,255
+     00 00 00 00 АА FF FGF
+6C57 00       01170       DB   0,0,0,0,0,255,255,255
+     00 00 00 00 FF FF FF
+6C5F 00       01180       DB   0,0,0,0,0,255,255,255
+     00 00 00 00 FF FF FF
+6C67 00       01190       DB   0,0,0,0,0,254,254,254
+     00 00 00 00 FE FE FE
+6C6F 00       01200       DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+              01210 :
+              01220 :
+6C77 00       01230 LTATT DB   0,3,3,5,5,5,5,5,0
+     03 03 05 05 05 05 05 00
+6C80 00       01240       DB   0,3,3,5,5,5,5,5,0
+     03 03 05 05 05 05 05 00
+6C89 00       01250       DB   0,0,0,5,5,5,5,5,0
+     00 00 05 05 05 05 05 00
+              01260 :
+              01270 :
+6C92 00       01280 RTRUCKDB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6C9A 7F       01290       DB   127,127,127,32,76,94,94,12
+     7F 7F 20 4C 5E 5E 0C
+6CA2 FF       01300       DB   255,255,255,0,96,240,240,96
+     FF FF 00 60 F0 F0 60
+6CAA FF       01310       DB   255,255,255,0,0,0,0,0
+     FF FF 00 00 00 00 00
+6CB2 FF       01320       DB   255,255,255,0,0,0,0,0
+     FF FF 00 00 00 00 00
+6CBA FF      01330        DB   255,255,255,255,96,240,240,96
+     FF FF FF 60 F0 F0 60
+6CC2 1F      01340        DB   31,63,127,254,29,27,3,1
+     3F 7F FE 1D 1B 03 01
+6CCA F8      01350        DB   248,248,248,124,188,220,192,128
+     F8 F8 7C BC DC C0 80
+6CD2 00      01360        DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6CDA 00      01370        DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6CE2 7F      01380        DB   127,127,127,127,127,127,127,127
+     7F 7F 7F 7F 7F 7F 7F
+6CEA FF      01390        DB   255,255,255,255,255,255,255,255
+     FF FF FF FF FF FF FF
+6CF2 FF      01400        DB   255,255,255,255,255,255,255,255
+     FF FF FF FF FF FF FF
+6CFA FF      01410        DB   255,255,255,255,255,255,255,255
+     FF FF FF FF  FF FF FF
+6D02 FF      01420        DB   255,255,255,255,255,255,255,255
+     FF FF FF FF FF FF FF
+6D0A 40      01430        DB   64,64,95,95,127,63,63,31
+     40 5F 5F 7F 3F 3F 1F
+6D12 00      01440        DB   0,0,224,144,136,136,248,248
+     00 E0 90 88 88 F8 F8
+6D1A 00      01450        DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6D22 00      01460        DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6D2A 00      01470        DB   0,0,0,0,0,127,127,127,
+     00 00 00 00 7F 7F 7F
+6D32 00      01480        DB   0,0,0,0,0,255,255,255
+     00 00 00 00 FF FF FF
+6D3A 00      01490        DB   0,0,0,0,0,255,255,255
+     00 00 00 00 FF FF FF
+6D42 00      01500        DB   0,0,0,0,0,255,255,255
+     00 00 00 00 FF FF FF
+6D4A 00      01510        DB   0,0,0,0,0,255,255,255
+     00 00 00 00 FF FF FF
+6D52 00      01520        DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6D5A 00      01530        DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+6D62 00      01540        DB   0,0,0,0,0,0,0,0
+     00 00 00 00 00 00 00
+             01550 :
+             01560 :
+6D6A 00      01570 RTATT  DB   0,5,5,5,5,5,3,3,0
+     05 05 05 05 05 03 03 00
+6D73 00      01580        DB   0,5,5,5,5,5,3,3,0
+     05 05 05 05 05 03 03 00
+6D7C 00      01590        DB   0,5,5,5,5,5,0,0,0
+     05 05 05 05 05 00 00 00
+             01600 :
+             01610 :
+6D85 00      01620 BLANK  DB   0,0,0,0
+     00 00 00 00
+             01630 :
+             01640 :
+0024         01650 FRGSTR DS   36           : 4*8+4
+0078         01660 PCSTR  DS   120          : 12*8+12+7
+             01670 :
+             01680 :
+             01690 :********  DATA BASE  ********
+             01700 :
+6E25 00      01710 OB1EXT DEFB  0        : OBJECT 1 EXISTENCE
+6E26 00      01720        DEFB  0        : CYCLE COUNT
+6E27 00      01730        DEFB  0        : DIRECTION, 0=>RIGHT
+6E28 00      01740        DEFB  0        : OBJECT 1 POS REAL/ABS
+6E29 0000    01750        DEFW  0        : POSITION COUNTER
+6E2B 0000    01760        DEFW  0        : SHAPE POINTER
+6E2D 0000    01770        DEFW  0        : ATTRIBUTE POINTER
+6E2F 00      01780        DEFB  0        : ROW COUNTER
+6E30 00      01790        DEFB  0        : COLUMN POINTER
+6E31 00      01800 OB2EXT DB    0,0,0,0
+     00 00 00
+6E35 0000    01810        DEFW  0        : OB2 POS REAL/ABS FLAG
+6E37 0000    01820        DEFW  0
+---------------------------------------------------------------
+DATA BASE - база данных; 
+OBJECT 1 EXISTENCE - существование объекта; 
+CYCLE COUNT - счетчик цикла; 
+DIRECTION - направление; 
+OBJECT 1 POS - позиция объекта 1; 
+POSITION COUNTER - счетчик позиций; 
+SHAPE POINTER - указатель изображения; 
+ATTRIBUTE POINTER - указатель атрибута; 
+ROW COUNTER - счетчик ряда; 
+COLUMN POINTER - указатель колонки; 
+OB2 POS REAL/FBS FLAG - флаг реального/абстрактного объекта и
+его позиции. 
+
+6E39 0000    01830        DEFW  0
+6E3B 00      01840        DB    0,0
+     00
+6E3D 00      01850 OB3EXTT DB    0,0,0,0
+     00 00 00
+6E41 0000    01860         DEFW  0
+6E43 0000    01870         DEFW  0
+6E45 0000    01880         DEFW  0
+6E47 00      01890         DB    0,0
+     00
+6E49 00      01900 OB4EXTT DB    0,0,0,0
+     00 00 00
+6E4D 0000    01910         DEFW  0
+6E4F 0000    01920         DEFW  0
+6E51 0000    01930         DEFW  0
+6E53 00      01940         DB    0,0
+     00
+6E55 00      01950 OB5EXTT DB    0,0,0,0
+     00 00 00
+6E59 0000    01960         DEFW  0
+6E5B 0000    01970         DEFW  0
+6E5D 0000    01980         DEFW  0
+6E5F 00      01990         DB    0,0
+     00
+6E61 00      02000 OB6EXT  DB    0,0,0,0
+     00 00 00
+6E65 0000    02010         DEFW  0
+6E67 0000    02020         DEFW  0
+6E69 0000    02030         DEFW  0
+6E6B 00      02040         DB    0,0
+     00
+             02050 :
+             02060 :
+6E6D 00      02070 PCAREXT DEFB  0        : POLICE CAR DATABASE
+6E6E 00      02080 PCARCYC DEFB  0
+6E6F 00      02090 PCARDIR DEFB  0
+6E70 00      02100 PCARRAP DEFB  0
+6E71 0000    02110 PCARPOS DEFW  0
+6E73 0000    02120 PCARSHP DEFW  0
+6E75 0000    02130 PCARATT DEFW  0
+6E77 02      02140 PCARROW DEFB  2
+6E78 06      02150 PCARCOL DEFB  6
+             02160 :
+             02170 :
+6E79 00      02180 FRGEXT  DEFB  0        : FROG DATABASE
+6E7A 00      02190 FRGCYC  DEFB  0
+6E7B 00      02200 FRGDIR  DEFB  0        : 0:UP 1:RHT 2:DWN 3:LFT
+6E7C 0000    02210 FRGPOS  DEFW  0
+6E7E 0000    02220 FRGSHP  DEFW  0
+6E80 00      02230 FRGATT  DEFB  0
+             02240 :
+             02250 :
+6E81 0B      02260 FRGDB   DB    8,8,1
+---------------------------------------------------------------
+POLICE CAR DATABASE - база данных полицейской машины; 
+FROG DATABASE - база данных лягушки; 
+0:UP 1:RHT 2:DWN 3:LFT - 0:вверх 1:вправо 2:вниз 3:влево; 
+
+     08 01
+6E84 AC50    02270 FRGSTN  DEFW  50ACH    :INITIAL POSITION OF FROG
+6E86 B769    02280         DEFW  FROG1
+6E88 04      02290         DB    4        : ATTR.TOTAL 8 CHARS
+             02300 :
+             02310 :
+6E89 956E    02320 DBINDEX DEFW  RBDB     : RIGHT BYTE DB
+6E8B A16E    02330         DEFW  LBDB     : LEFT BIKE DB
+6E8D AD6E    02340         DEFW  RCDB     : RIGHT CAR DB
+6E8F B96E    02350         DEFW  LCDB     : LEFT CAR DB
+6E91 C56E    02360         DEFW  RTDB     : RIGHT TRUCK DB
+6E93 D16E    02370         DEFW  LTDB     : LEFT TRUCK DB
+             02380 :
+             02390 :
+6E95 02      02400 RBDB    DB    2,1,0,0  : EXT CNT DIR RAF
+     01 00 00
+6E99 1D48    02410         DEFW  481DH    : POS
+6E9B 7F6A    02420         DEFW  RBIKE    : RIGHT BIKE
+6E9D BF6A    02430         DEFW  RBATT    : ATTRIBUTE
+6E9F 02      02440         DB    2,4      : ROW COL
+     04
+             02450 :
+             02460 :
+6EA1 02      02470 LBDB    DB    2,1,1,1
+     01 01 01
+6EA5 DF4B    02480         DEFW  48DFH
+6EA7 376A    02490         DEFW  LBIKE
+6EA9 776A    02500         DEFW  LBATT
+6EAB 02      02510         DB    2,4
+     04
+             02520 :
+             02530 :
+6EAD 03      02540 RCDB    DB    3,1,0,0
+     01 00 00
+6EB1 1B48    02550         DEFW  481BH
+6EB3 336B    02560         DEFW  RCAR
+6EB5 936B    02570         DEFW  RCATT
+6EB7 02      02580         DB    2,6
+     06
+             02590 :
+             02600 :
+6EB9 03      02610 LCDB    DB    3,1,1,1
+     01 01 01
+6EBD DF48    02620         DEFW  48DFH
+---------------------------------------------------------------
+INITIAL POSITION OF FROG - начальное положение лягушки. 
+ATTR.TOTAL 8 CHARS - все в литер атрибутов; 
+RIGHT BYTE DB - база данных правого байта; 
+LET BIKE DB - база данных левого мотоцикла; 
+RIGHT CAR DB - база данных правого автомобиля; 
+LEFT CAR DB - база данных левого автомобиля; 
+RIGHT TRUCK DB - база данных правого грузовика; 
+LEFT TRUCK DB - база данных левого грузовика; 
+EXT CNT DIR RAF - расшифровать не удалось; 
+POS - позиция; 
+RIGHT BIKE - правый мотоцикл; 
+ROW COL - ряд, колонка. 
+
+6EBF C76A    02630         DEFW  LCAR
+6EC1 276B    02640         DEFW  LCATT
+6EC3 02      02650         DB    2,6
+     06
+             02660 :
+             02670 :
+6EC5 06      02680 RTDB    DB    6,1,0,0
+     01 00 00
+6EC9 1848    02690         DEFW  4818H
+6ECB 926C    02700         DEFW  RTRUCK
+6ECD 6A6D    02710         DEFW  RTATT
+6ECF 03      02720         DB    3,9
+     09
+             02730 :
+             02740 :
+6ED1 06      02750 LTDB    DB    6,1,1,1
+     01 01 01
+6ED5 DF48    02760         DEFW  48DFH
+6ED7 9F6B    02770         DEFW  LTRUCK
+6ED9 776C    02780         DEFW  LTATT
+6EDB 03      02790         DB    3,9
+     09
+             02800 :
+             02810 :
+6EDD 01      02820 LPCDB   DB    1,1,1,1
+     01 01 01
+6EE1 DF48    02830         DEFW  48DFH
+6EE3 C76A    02840         DEFW  LCAR
+6EE5 E96E    02850         DEFW  LPCATT
+6EE7 02      02860         DB    2,6
+     06
+             02870 :
+             02880 :
+6EE9 00      02890 LPCATT  DB    0,5,5,5,5,0
+     05 05 05 05 00
+6EEF 00      02900         DB    0,0,0,5,5,0
+     00 00 05 05 00
+             02910 :
+             02920 :
+6EF5 01      02930 RPCDB   DB    1,1,0,0
+     01 00 00
+6EF9 1B48    02940         DEFW  481BH
+6EFB 336B    02950         DEFW  RCAR
+6EFD 016F    02960         DEFW  RPCATT
+6EFF 02      02970         DB    2,6
+     06
+             02980 :
+             02990 :
+6F01 00      03000 RPCATT  DB    0,5,5,5,5,0
+     05 05 05 05 00
+6F07 00      03010         DB    0,5,5,0,0,0
+     05 05 00 00 00
+             03020 :
+             03030 :
+             00480 :
+             00490 :
+6F0D 29      00500 PCTON1  DB    41,0, 0F0H,1  :FIRST POLICE CAR
+     00 F0 01                                  :TONE
+6F11 17      00510 PCTON2  DB    23,BCH,3      :SECOND POLICE CAR
+     00 BC 03                                  :TONE
+             00520 :
+             00530 :
+6F15 46      00540 HOMTON  DB    46H,0,0C7H,4  :FROG REACH HOME
+     00 C7 04                                  :TONE
+6F19 5D      00550         DB    5DH,0,8CH,3
+     00 8C 03
+6F1D 7C      00560         DB    7CH,0,0A1H,2
+     00 A1 02
+6F21 AA      00570         DB    0AAH,0,0F1H,1
+     00 F1 01
+6F25 DE      00580         DB    0DEH,0,6DH,1
+     00 6D 01
+6F29 28      00590         DB    28H,1,9,1
+     01 09 01
+6F2D 8B      00600         DB    8BH,1,0BFH,0
+     01 BF 00
+6F31 0F      00610         DB    0FH,2,88H,0
+     02 88 00
+6F35 C0      00620         DB    0C0H,2,5EH,0
+     02 5E 00
+6F39 84      00630 DIETON  DB    84H,3,43H,0   :FROG DYING TONE,
+     03 43 00                                  :REVERSE
+             00640 :
+             00650 :
+6F3D 53      00660 SCRMS1  DM    "SCORE"
+     63 6F 72 65 70
+6F43 30      00670 SCORE   DB    30H,30H,30H,30H,30H,30H
+     30 30 30 30 30
+6F49 48      00680 SCRMS2  DM    "HIGH SCORE"
+     49 47 48 20 53 43 4F 52
+6F54 30      00690 HISCR   DB    30H,30H,30H,30H
+     30 30 30
+             00700 :
+             00710 :
+0005         00720 IMAGE   DS    5        :PRINTING IMAGE OF SCORE
+6F5E 00      00730 UPDWN   DEFB  0        :SET WHEN FROG MOVES UP
+                                          :OR DOWN
+             00740 :
+             00750 :
+6F5F 00      00760 COLUMN  DB    0        :VARIABLE STORING SHAPE
+                                          :COLUMN
+
+---------------------------------------------------------------
+FIRST POLICE CAR TONE - нота первой полицейской машины; 
+SECOND POLICE CAR TONE - нота второй полицейской машины; 
+FROG REACH HOME TONE - нота достижения лягушкой дома; 
+FROG DYING TONE,REVERSE - нота смерти лягушки,обращенная. 
+PRINTING IMAGE OF SCORE - выдача изображения счета; 
+SET  WHEN  FROG  MOVES  UP  OR  DOWN - устанавливается, когда
+лягушка перемещается вверх или вниз; 
+VARIABLE   STORING  SHAPE  COLUMN  -  переменная,  в  которой
+хранится колонка изображения; 
+
+6F60 00      00770 ROW     DB    0        :VARIABLE STORING SHAPE
+                                          :ROW
+6F61 00      00780 SKIP    DEFB  0        :CHAR SCIPPING DURING
+                                          :DRAWN
+6F62 00      00790 FILL    DEFB  0        :CHAR DRAWN
+6F63 0000    00800 ATTPOS  DEFW  0        :HOLDING THE ATTRIBUTE
+                                          :FILE PTR
+6F65 00      00810 ATTR    DB    0        :ATTR OF CHARACTER BLOCK
+                                          :DRAWN
+6F66 0000    00820 DRWPOS  DEFW  0        :DRAW POSITION
+6F68 0000    00830 STROPS  DEFW  0        :STORE POSITION
+             00840 :
+             00850 :
+6F6A 0000    00860 ATTPTR  DEFW  0
+6F6C 0000    00870 NEWPOS  DEFW  0        :NEW TRAFFIC OBJECT
+                                          :POSITION
+6F6E 0000    00880 POSPTR  DEFW  0        :TRAFFIC POSITION
+                                          :DATABASE  PTR
+6F70 00      00890 GENFLG  DEFB  0        :TRAFFIC REGENERATION
+                                          :FLAG
+             00900 :
+             00910 :
+6F71 00      00920 JAMFLG  DEFB  0        :SET TO 1 AS TRAFFIC MOVE
+                                          :JAM
+             00930 :
+             00940 :
+6F72 00      00950 CHASE   DEFB  0        :SET WHEN POLICE CAR
+                                          :APPEARS
+6F73 00      00960 SOUNDF. DEFB  0        :SET WHEN USER WANT SIREN
+                                          :SOUND
+6F74 00      00970 TONFLG  DEFB  0        :DETERMINE WHICH SIREN
+                                          :TONE
+6F75 0000    00980 RND     DEFW  0        :POINTER TO ROW FOR
+                                          :RANDOM  NO
+             00990 :
+             01000 :
+6F77 01      01010 GAMFLG  DEFB  1        :END IF ZERO
+---------------------------------------------------------------
+VARIABLE  STORING  SHAPE ROW - переменная, в которой хранится
+ряд изображения; 
+CHAR   SKIPPING   DURING  DRAWN  -  пpопуск  литер  во  время
+рисования; 
+CHAR DRAWN - изображение литеры; 
+HOLDING  THE  ATTRIBUTE  FILE  PTR - содержит указатель файла
+атрибу- тов; 
+ATTR  OF  CHARACTER BLOCK DRAWN - изображение атрибутов блока
+литер; 
+DRAW POSITION - позиция рисования; 
+STORE POSITION - позиция хранения; 
+NEW TRAFFIC OBJECT POSITION - позиция нового объекта движения
+транспорта; 
+TRAFFIC   POSITION  DATABASE  PTR  -  указатель  базы  данных
+позиции 
+
+6F78 0000    01020 OLDFRG  DEFW  0        :OLD FROG POS
+6F7A 0000    01030 NEWFRG  DEFW  0        :NEW FROG POS
+6F7C 00      01040 CRHFLG  DEFB  0        :SET TO 1 WHEN FROG WAS
+                                          :CRASH
+6F7D 00      01050 TEMDIR  DEFB  0        :FROG TEMPORARY NEW
+                                          :DIRECTION
+6F7E 0000    01060 TEMPOS  DEFW  0        :FROG TEMPORARY NEW
+                                          :POSITION
+6F80 0000    01070 TEMSHP  DEFW  0        :FROG TEMPORARY NEW
+                                          :SHAPE
+             01080 :
+             01090 :
+5020         01100 BOTHY1  EQU   5020H    :0,38. 0,39
+5120         01110 BOTHY2  EQU   5120H
+46A0         01120 TOPHY1  EQU   46A0H    :0,128. 0,129
+47A0         01130 TOPHY2  EQU   47A0H
+4B60         01140 MIDHY1  EQU   4B60H    :X,83. X,84
+4C60         01150 MIDHY2  EQU   4C60H
+             01160 :
+             01170 :
+3C00         01180 CHRSET  EQU   3C00H    :FIRST 256 BYTES NOTHING
+             01190 :
+             01200 :
+6F82 05      01210 NUMFRG  DEFB  5        :NUMBER OF FROG
+             01220 :
+             01230 :
+6F83 AF      01240 INIT    XOR   5        :000 FOR D2 D1 D0
+6F84 D3FE    01250         OUT   (0FEH),A :SET BORDER COLOUR
+6F86 32485C  01260         LD    (23624),A:TO BLACK
+6F89 327C6F  01270         LD    (CRHFLG),A
+6F8C 32796E  01280         LD    (FRGEXT),A:SET FROG NON EXIST
+6F8F 3C      01290         INC   A
+6F90 32776F  01300         LD    (GAMFRG),A:SET GAME FLAG
+6F93 3E05    01310         LD    A,5      :INITIALISE FROG NO
+6F95 32826F  01320         LD    (NUMFRG),A
+6F98 ED5F    01330         LD    A,R      :GENERATE RANDOM PTR
+6F9A E63F    01340         LD    3FH      :FOR THIS CYCLE
+
+---------------------------------------------------------------
+OLD FROG POS - старая позиция лягушки; 
+NEW FROG POS - новая позиция лягушки. 
+SET  TO  1  WHEN  FROG WAS CRASH - устанавливается в 1, когда
+лягушка сталкивается с транспортом; 
+FROG  TEMPORARY  NEW  DIRECTION - временное новое направление
+движе- ния лягушки; 
+FROG  TEMPORARY  NEW  POSITION  -  временное  новое положение
+лягушки; 
+FROG  TEMPORARY  NEW  SHAPE  -  временное  новое  изображение
+лягушки; 
+FIRST 256 BYTES NOTHING - в первых 256 байтах ничего нет; 
+NUMBER OF FROG - номер лягушки; 
+SET BORDER COLOUR - установить цвет окаймления; 
+TO BLACK - черный; 
+SET FROG NON EXIST - установить лягушку несуществующей; 
+SET GAME FLAG - установить флаг игры; 
+INITIALISE FROG NO - инициализировать номер лягушки. 
+GENERATE RANDOM PTR - сгенерировать случайный указатель; 
+FOR THIS CYCLE - в этом цикле; 
+
+6F9C 67      01350         LD    H,A      :PTR POINTES TO ROW
+6F9D ED5F    01360         LD    A,R
+6F6F 6F      01370         LD    L,A
+6FA0 22756F  01380         LD    (RND),HL
+6FA3 21AC50  01390         LD    HL,50ACH :INIT FROG STATION
+6FA6 22846E  01400         LD    (FRGSTN),HL
+6FA9 CDD772  01410         CALL  CLRSCR   :CLEAR SCREEN ROUTINE
+6FAC CDDB70  01420         CALL  DRWHWY   :DRAW HIGHWAY
+6FAF CD5570  01430         CALL  LINEUP   :LINE UP ALL EXIST FROGS
+6FB2 210040  01440         LD    HL,4000H :MESSAGE LOCATION
+6FB5 113D6F  01450         LD    DE,SCRMS1:LOAD SCORE MESSAGE
+6FB8 0606    01460         LD    B,6
+6FBA CD2873  01470         CALL  DISASC   :DISPLAY ASCII CHARACTER
+6FBD 21446F  01480         LD    HL,SCORE+1:PRINT SCORE
+6FC0 CD6F77  01490         CALL SCRING    :CONVERT TO PRINTABLE IMAGE
+6FC3 210640  01500         LD    HL,4000H
+6FC6 11596F  01510         LD    DE,IMAGE
+6FC9 0605    01520         LD    B,5
+6FCB CD2873  01530         CALL  DISASE
+6FCE 210E40  01540         LD    HL,400EH :HIGH SCORE MESSAGE
+6FD1 11496F  01550         LD    DE,SCRMS2
+6FD4 060B    01560         LD    D,11
+6FD6 CD2873  01570         CALL  DISASC
+6FD9 21546F  01580         LD    HL,HISCR
+6FDC CD6F77  01590         CALL  SCRIMG
+6FDF 211940  01600         LD    HL,4019H
+6FE2 11596F  01610         LD    DE,IMAGE
+6FE5 0605    01620         LD    B,5
+6FE7 CD2873  01630         CALL  DISASC
+6FEA 2156E   01640         LD    HL,OBJECT:SET ALL OBJ NONEXIST
+6FED 110C00  01650         LD    DE,12
+6FF0 0607    01660         LD    B,7
+6FF2 AF      01670         X0R   A
+6FF3 77      01680 INTLP1  LD    (HL),A
+6FF4 19      01690         ADD   HL,DE
+6FF5 10FC    01700         DJNZ  INTLP1
+6FF7 32726F  01710         LD    (CHASE),A:SET NO POLICE CAR CHASE
+6FFA 3C      01720         INC   A        :SET SIREN ON
+6FFB 32776F  01730         LD    (SOUNDF),A:INITIALISE SCORE TO
+                                           :ASCII ZERO IE 30H
+---------------------------------------------------------------
+PTR POINTS TO ROW - указатель указывает на ПЗУ; 
+INIT FROG STATION - исходный пункт лягушки; 
+CLEAR SCREEN ROUTINE - программа очистки экрана; 
+DRAW HIGHWAY - изображение шоссе; 
+LINE  UP  ALL  EXIST  FROGS  -  выстроить  всех  существующих
+лягушек; 
+MESSAGE LOCATION - определение положения сообщения; 
+LOAD SCORE MESSAGE - загрузить сообщение о счете; 
+DISPLAY ASCII CHARACTER - выдать литеру в коде ASCII; 
+PRINT SCORE - выдать счет; 
+CONVERT   TO  PRINTABLE  IMAGE  -  преобразовать  в  печатное
+изображение; 
+HIGH SCORE MESSAGE - сообщение о максимальном счете. 
+SET ALL OBJ NONEXIST -задать все объекты несуществующими; 
+SET NO POLICE CAR CHASE - установить отсутствие преследования
+полицейской машиной; 
+SET SIREN ON - установить включение сирены; 
+INITIALISE  SCORE  TO  ASCII  ZERO  IE 30H - инициализировать
+значение счета нулем в коде ASCII 30H; 

@@ -1,0 +1,244 @@
+
+76ED 77      13660         LD    (HL),A
+76EE 2B      13670         DEC   HL
+76EF 77      13680         LD    (HL),A
+76F0 CD0877  13690         CALL  FRGTON  :GENERATE FROG TONE
+76F3 E1      13700         POP   HL
+76F4 E5      13710         PUSH  HL
+76F5 08      13720         EX    AF,AF'
+76F6 77      13730         LD    (HL),A  :BLACK PAPER,RED OR YELLOW
+                                         INK
+76F7 23      13740         INC   HL
+76F8 77      13750         LD    (HL),A
+76F9 A7      13760         AND   A
+76FA ED52    13770         SBC   HL,DE
+76FC 77      13780         LD    (HL),A
+76FD 2B      13790         DEC   HL
+76FE 77      13800         LD    (HL),A
+76FF 08      13810         EX    AF,AF'
+7700 CD0877  13820         CALL FRGTON
+7703 E1      13830         POP   HL
+7704 C1      13840         POP   BC
+7705 10DE    13850         DJNZ  FLASLP
+7707 C9      13860         RET
+             13870 :
+             13880 :
+7708 D9      13890 FRGTON  EXX
+7709 E5      13900         PUSH  HL
+770A CDB577  13910         CALL  TONE
+770D         13920         POP   HL
+770E E1      13930         LD    BC,4    :MOVE DOWN DATABASE
+7711 010400  13940         EX    AF,AF'
+7712 08      13950         CP    6
+7714 FE06    13960         JR    Z,HOME
+7716 2903    13970         LD    BC,-4   :MOVE UP DATABASE
+7719 01FCFF  13980 HOME    ADD   HL,BC
+771A         13990         EXX
+771B         14000         EX
+771C         14010         RET
+             14020 :
+             14030 :
+771D 3A796E  14040 CALSCR  LD    A,(FRGEXT):TEST EXISTENSE
+7720 A7      14050         AND   A
+7721 C8      14060         RET   Z       :NO UPDATE OF SCORE
+7722 3A5E6F  14070         LD    A,(UPDWN):TEST UP/DOWN MOVEMENT
+7725 A7      14080         AND   A       :TEST ANY SCORE
+7726 C8      14090         RET   Z
+7727 21478F  14100         LD    HL,SCORE+4:ADD 10 TO SCORE
+---------------------------------------------------------------
+GENERATE FROG TONE - генерация ноты лягушки;
+BLACK  PAPER,RED  OR  YELLOW INK - черная бумага, красные или
+желтые чернила 
+MOVE DOWN DATABASE - переместиться вниз по базе данных;
+MOVE UP DATABASE - переместиться вверх по базе данных;
+TEST EXISTENCE - проверить существование;
+NO UPDATE OF SCORE - без обновления счета;
+TEST UP?DOWN MOVEMENT - проверить движение вверх/вниз;
+TEST ANY SCORE - проверить наличие какого-либо счета;
+ADD 10 TO SCORE - добавить 10 к счету;
+
+
+772A CB7F    14110         BIT   Z,A     :TEST MOVE DOWN
+772C 2003    14120         JR    NZ,DWNSCR:DOWN SCORE
+772E 34      14130         INC   (HL)
+772F 181A    14140         JR    DISSCR  :DIS SCORE
+7731 3A796F  14150 DWNSCR  LD    A,(OLDRG+1):TEST HOB
+7734 FE40    14160         CP    40H     :TEST FIRST BLOCK
+7736 2009    14170         JR    NZ,TLHWY:TEST LOW HIGHWAY
+7738 3A7B6F  14180         LD    A,(OLDFRG)
+773B FECO    14190         CP    DC0H    :NOT EVEN STEP ON HWY
+773D BD8     14200         RET   C
+773E 34      14210         INC   (HL)
+773F 180A    14220         JR    DISSCR
+7741 FE50    14230 TLHWY   CP    50H     :TEST IN LOW HWY
+7743 C0      14240         RET   NZ
+7744 3A786F  14250         LD    A,(OLDFRG)
+7747 FE20    14260         CP    20H
+7749 D0      14270         RET   NC      :NO SCORE IF STEP HWY
+774A 34      14280         INC   (HL)
+774B 0604    14290 DISSCR  LD    B,4     :HL=>TENTH'S POS
+774D 7E      14300 ADDLOP  LD    A,(HL)
+774E FE3A    14310 CRYLOP  CP    3AH     :CARRY LOOP
+7750 3807    14320         JR    C,UPDDIG:UPDATE DIGIT
+7752 D60A    14330         SUB   10
+7754 2B      14340         DEC   HL
+7755 34      14350         INC   (HL)    :CARRY
+7756 23      14360         INC   HL
+7757 18F5    14370         JR    CRYLOP
+7759 77      14380 UPDDIG  LD    (HL),A
+775A 2B      14390         DEC   HL
+775B 10F0    14400         DJNZ  ADDLOP
+775D 21446F  14410         LD    HL,SCORE+1
+7760 CD6F77  14420         CALL  SCRRING :SCORE IMAGE
+7763 210640  14430         LD    HL,4006H
+7766 11596F  14440         LD    DE,IMAGE
+7769 0605    14450         LD    B,5
+7768 CD2873  14460         CALL  DISASC
+776E C9      14470         RET
+             14480 :
+             14490 :
+776F 11596F  14500 SCRIMG  LD    DE,IMAGE
+7772 010500  14510         LD    DC,5
+7775 EDB0    14520         LDIR
+7777 21596F  14530         LD    HL,IMAGE
+---------------------------------------------------------------
+TEST MOVE DOWN - проверить движение вниз;
+DOWN SCORE - счет вниз;
+DIS SCORE - счет расстояния;
+TEST HOB - проверить старший байт;
+TEST FIRST BLOCK - проверить первый блок;
+TEST LOW HIGHWAY - проверить нижнюю полосу шоссе;
+NOT EVEN STEP ON HWY - шаг на шоссе нечетный;
+TEST IN LOW HWY - проверка на нижней полосе шоссе;
+NO SCORE, IF STEP HWY - счета нет, если шаг на шоссе;
+HL=>TENT'S POS - разряд десятков;
+CARRY LOOP - цикл переноса;
+UPDATE DIGIT - обновление разряда;
+SCORE IMAGE - изображение счета.
+
+
+777A 013004  14540         LD    BC,0430H
+777D 79      14550 PREZER  LD    A,C
+777E BE      14560         CP    (HL)    :TEST 30H
+777F 2005    14570         JR    NZ,PREZER
+7781 3620    14580         LD    (HL),20H:SPACE FILL
+7781 23      14590         INC   HL
+7784 10F7    14600         DJNZ  PREZER
+7786 C9      14610 PREZER  RET
+             14620 :
+             14630 :
+7787 3EBF    14640 SIREN   LD    A,0BFH
+7789 DBFE    14650         INC   A,(0FEH)
+778B E601    14660         AND   1
+778D 2009    14670         JR    NZ,NSOUND
+778F 3A736F  14680         LD    A,(SOUNDF):RESET SOUND CONDITION
+7792 3C      14690         INC   A
+7793 E601    14700         AND   1
+7795 32736F  14710         LD    (SOUNDF),A
+7798 3A736F  14720 NSOUND  LD    A,(SOUNDF)
+779B A7      14730         AND   A
+779C 2825    14740         JR    Z,DELAY
+779E 3A726F  14750         LD    A,(CHASE):IS POLICE CAR ON
+77A1 A7      14760         AND   A
+77A2 281F    14770         JR    Z,DELAY
+77A4 3A746F  14780         LD    A,(TONFLS)
+77A7 3C      14790         INC   A
+77A8 E601    14800         AND   1
+77AA 32746F  14810         LD    (TONFLS),A
+77AD 210D6F  14820         LD    HL,PCTON1
+77B0 2803    14830         JR    Z,TONE1
+77B2 21116F  14840         LD    HL,PCTON2
+77B5 5E      14850 TONE1   LD    E,(HL)  :DE = DURATION*FREQUENCY
+77B6 23      14860         INC   HL
+77B7 56      14870         LD    D,(HL)
+77B8 23      14880         INC   HL
+77B9 4E      14890         LD    C,(HL)
+77BA 23      14900         INC   HL
+77BB 46      14910         LD    B,(HL)
+77BC C5      14920         PUSH  BC
+77BD E1      14930         POP   HL      :HL=437500/FREQ-30,125
+77BE CDB503  14940         CALL  0385H
+77C1 F3      14950         DI            :0385H ENABLE INTERRUPT
+77C2 C9      14960         RET
+77C3 010018  14970 DELAY   LD    DC,6144
+77C6 08      14980 MAIT    DEC   DC
+77C7 78      14990         LD    A,B
+77C8 B1      15000         OR    C
+77C9 20FB    15010         JR    NZ,MAIT
+77CB C9      15020         RET
+             15030 :
+---------------------------------------------------------------
+TEST 30H - проверить 30H;
+SPACE FILL - заполнение пробелами;
+RESET  SOUND  CONDITION  -  сбросить  условие  для  звукового
+сигнала; 
+IS POLICE CAR ON - есть ли полицейская машина;
+DURATION*FREQUENCY - продолжительность*частота:
+ENABLE INTERRUPT - разблокировка прерывания.
+
+
+             15040 :
+77CC E5      15050 RANDNG  PUSH  HL
+77CD C5      15060         PUSH  BC
+77CE 2A56F   15070         LD    HL,(RND)
+77D1 46      15080         LD    B,(HL)
+77D2 23      15090         INC   HL
+77D3 3E3F    15100         LD    A,3FH   :ROUND POINTER WITHIN ROM
+77D5 A4      15110         AND   H
+77D6 67      15120         LD    H,A
+77D7 78      15130         LD    A,B
+77D8 22756F  15140         LD    (RND),HL
+77DB C1      15150         POP   BC
+77DC E1      15160         POP   HL
+77DD C9      15170         RET
+             15180 :
+             15190 :
+77DE 21446F  15200 OVER    LD    HL,SCORE+1:HIGH SCORE MANAGE
+77E1 11546F  15210         LD    DE,HISCR
+77E4 0605    15220         LD    B,5
+77E6 1A      15230 SORTLP  LD    A,(DE)
+77E7 BE      15240         CP    (HL)
+77E8 2803    15250         JR    Z,SAMSCR:TEST 1ST NE DIGIT
+77EA D0      15260         RET   NC
+77EB 1805    15270         JR    SCRGT
+77ED 13      15280 SAMSCR  INC   DE
+77EE 23      15290         INC   HL
+77EF 10F5    15300         DJNZ  SOPTLP
+77F1 C9      15310         RET
+77F2 21446F  15320 SCRGT   LD    HL,SCORE+1
+77F5 11546F  15330         LD    DE,HISCR
+77F8 010500  15340         LD    BC,5
+77FB EDB0    15350         LDIR
+77FD C9      15360         RET
+             15370 :
+             15380 :
+77FE 3E38    15390 FINAL   LD    A,56    :SET WHITE BORDER
+7800 32485C  15400         LD    (23624),A
+7803 210040  15410         LD    HL,4000H:START OF SCREEN
+7806 110140  15420         LD    DE,4001H
+7809 01FF17  15430         LD    CB,6143 :SIZE OF SCREEN
+780C 3600    15440         LD    (HL),0
+780E EDB0    15450         LDIR
+7810 210058  15460         LD    HL,5800H:START OF ATTRIBUTE FILE
+7813 110158  15470         LD    DE,5801H
+7816 01FF02  15480         LD    CB,767
+7819 3638    15490         LD    (HL),56 :WHITE PAPER BLACK INK
+781B EDB0    15500         LDIR
+781D C9      15510         RET
+---------------------------------------------------------------
+SOUND POINTER WITHIN ROM - связанный указатель в ПЗУ;
+HIGH SCORE MANAGE - управление максимальным счетом;
+TEST  1ST NE DIGIT - проверка первого неравного разряда;
+SET WHITE BORDER - установить белое окаймление;
+START OF SCREEN - начало экрана;
+SIZE OF SCREEN - размер экрана;
+START OF ATTRIBUTE FILE - начало файла атрибутов;
+WHITE PAPER BLACK INK -белая бумага, черные чернила;
+
+
+             15520 :
+             15530 :
+6978         15540         END   START
+00000 TOTAL  ERRORS
+---------------------------------------------------------------
+TOTAL ERRORS - всего ошибок.

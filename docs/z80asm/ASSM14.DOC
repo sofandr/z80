@@ -1,0 +1,763 @@
+
+
+732B 1A      07660         LD    A,(DE)  :LOAD ASCII CHAR
+732C 6F      07670         LD    L,A
+732D 2600    07680         LD    H,0
+732F 29      07690         ADD   HL,HL   :MULTIPLE OF 8 BYTES
+7330 29      07700         ADD   HL,HL
+7331 29      07710         ADD   HL,HL
+7332 EB      07720         EX    DE,HL
+7333 21003C  07730         LD    HL,CHRSET:START OF CHARACTER SET
+7336 19      07740         ADD   HL,DE
+7337 EB      07750         EX    DE,HL
+7338 E1      07760         POP   HL
+7339 0608    07770 DRWCHR  LD    B,8     :DRAW CHARACTER
+733B E5      07780         PUSH  HL
+733C 1A      07790 CHARLP  LD    A,(DE)
+733D 77      07800         LD    (HL),A
+733E 13      07810         INC   DE
+733F 24      07820         INC   H
+7340 10FA    07830         DJNZ  CHARLP
+7342 E1      07840         POP   HL
+7343 D1      07850         POP   DE
+7344 23      07860         INC   HL      :POS PTR
+7345 13      07870         INC   DE      :MESSAGE PTR
+7346 C1      07880         POP   BC
+7347 10DF    07890         DJNZ  DISASC
+7349 C9      07900         RET
+             07910 :
+             07920 :
+734A D9      07930 POLICE  EXX
+734B 216D6E  07940         LD    HL,PSAREXT
+734E 7E      07950         LD    A,(HL)  :TEST POLICE CAR EXIST
+734F E5      07960         PUSH  HL
+7350 D9      07970         EXX
+7351 A7      07980         AND   A
+7352 2023    07990         JR    NZ,MOVPC:MOVE POLICE CAR
+7353 D1      08000         POP   DE      :DB EXT PTR
+7355 CDCC77  08010         CALL  RANOND  :MOVE WHEN MULTIPLE OF 31
+7358 E61F    08020         AND   1FH
+735A FE1F    08030         CP    1FH
+735C C0      08040         RET   NZ
+735D 3E01    08050         LD    A,1     :SET CHASE FLAG
+735F 32726F  08060         LD    (CHASE),A
+7362 21F56E  08070         LD    HL,RPCDB:RIGHT PC
+7365 CDCC77  08080         CALL  RANDOM
+7368 E601    08090         AND   1
+---------------------------------------------------------------
+LOAD ASCII CHAR - загрузить литеру кода ASCII;
+MULTIPLE OF * BYTES - кратное 8 байтам;
+START OF CHARACTER SET - начало набора литер.
+DRAW CHARACTER - изобразить литеру;
+POS PTR - указатель позиции;
+MESSAGE PTR - указатель сообщения;
+TEST  POLICE  CAR EXIST - проверить существование полицейской
+машины; 
+MOVE POLICE CAR - переместить полицейскую машину;
+DB EXT PTR - указатель базы данных:
+MOVE WHEN MULTIPLE OF 31 - переместиться, когда кратное 31;
+SET CHASE FLAG - установить флаг преследования;
+RIGHT PC - правая полицейская машина;
+
+736A 2803    08100         JR    Z,RHTPC
+736C 21DD6E  08110         LD    HL,LPCDB
+736F 010C00  08120 RHTPC   LD    BC,12
+7372 EDB0    08130         LDIR
+7374 D9      08140         EXX
+7375 E5      08150         PUSH  HL
+7376 D9      08160         EXX
+7377 E1      08170 MOVPC   POP   HL      :EXISTENCE PTR
+7378 23      08180         INC   HL
+7379 23      08190         INC   HL      :DIRECTION
+737A 7E      08200         LD    A,(HL)
+737B 47      08210         LD    B,A     :STORE DIR
+737C 23      08220         INC   HL
+737D 23      08230         INC   HL      :POSPTR
+737E 226E6F  08240         LD    (POSPTR),HL
+7381 5E      08250         LD    E,(HL)
+7382 23      08260         INC   HL
+7383 56      08270         LD    D,(HL)
+7384 1C      08280         INC   E       :ASSUME MOVE RIGHT
+7385 A7      08290         AND   A
+7386 2802    08300         JR    Z,PCMRHT:POLICE CAR MOVE RIGHT
+7388 1D      08310         DEC   E
+7389 1D      08320         DEC   E
+738A ED536C6F08330 PCMRHT  LD    (NEWPOS),DE
+738E 3E02    08340         LD    A,2     :TWO ROW
+7390 32606F  08350         LD    (ROW),A
+7393 3E06    08360         LD    A,6
+7395 325F6F  08370         LD    (COLUMN),A
+7398 C5      08380         PUSH  BC      :DIRECTION
+7399 3A706E  08390         LD    A,(PCARRAP):REAL/ABS FLAG
+739C EB      08400         EX    DE,HL
+739D CD9672  08410         CALL  RSHAPE  :RET SKIP/FILL,ATTR
+73A0 2A636F  08420         LD    HL,(ATTPOS)
+73A3 F1      08430         POP   AF
+73A4 A7      08440         AND   A       :IF 1,OK
+73A5 2004    08450         JR    NZ,PSTAH:POLICE CAR TEST AHEAD
+73A7 010500  08460         LD    BC,5
+73AA 09      08470         ADD   HL,BC
+73AB 7E      08480 PCTAH   LD    A,(HL)
+73AC E607    08490         ADD   7
+73AE 012000  08500         LD    BC,32
+73D1 A7      08510         AND   A
+73B2 ED42    08520         SBC   HL,BC
+73B4 FE04    08530         CP    4
+73B6 2807    08540         JR    Z,ISFRG2
+---------------------------------------------------------------
+EXISTENCE PTR - указатель существования;
+DIRECTION - направление;
+STORE DIR - записать направление;
+ASSUME MOVE RIGHT - предполагается движение вправо;
+POLICE CAR MOVE RIGHT - полицейская машина движется вправо.
+TWO ROW - два ряда;
+REAL/ABS FLAG - флаг реального/абстрактного;
+RET SKIP/FILL,ATTR - возврат пропуска/заполнения, атрибуты;
+IF 1, OK - если 1, все в порядке;
+POLICE   CAR   TEST   AHEAD  -  проверка  того,  что  впереди
+полицейской машины; 
+
+73B8 7E      08550         LD    A,(HL)
+73B9 E607    08560         AND   7
+73BB FE04    08570         CP    4
+73BD 2009    08580         JR    NZ,NFROG2
+73BF 3E01    08590 ISFRG2  LD    A,1
+73C1 327C6F  08600         LD    (CRHFLG),A:SET CRASH FLAG
+73C4 3D      08610         DEC   A       :BLANK COLOUR
+73C5 77      08620         LD    (HL),A  :BLANK FRONT OF PC
+73C6 09      08630         ADD   HL,BC
+73C7 77      08640         LD    (HL),A  :**SHOULD BLANK FRONT*
+73C8 CDDF73  08650 NFROG2  CALL  STRPC   :STORE NEW UNDERNEATH
+73CB 2A6E6F  08660         LD    HL,(POSPTR)
+73CE ED5B6C6F08670         LD    DE,(NEWPOS)
+73D2 73      08680         LD    (HL),E
+73D3 23      08690         INC   HL
+73D4 72      08700         LD    (HL),D
+73D5 CDAF71  08710         CALL  MVCTRL
+73D8 D9      08720         EXX           :IF NON-EXIST
+73D9 7E      08730         LD    A,(HL)
+73DA 32726F  08740         LD    (CHASE),A
+73DD D9      08750         EXX
+73DE C9      08760         RET
+             08770 :
+             08780 :
+             08790 :********  STRPC  ********
+             08800 :
+             08810 :   STORE UNDERNEATH POLICE CAR
+             08820 :
+73DF 2A6C6F  08830 STRPC   LD    HL,(NEWPOS):POS PTR
+73E2 11AD6D  08840         LD    DE,PCSTR:STORAGE LOC
+73E5 EB      08850         EX    DE,HL
+73E6 73      08860         LD    (HL),E  :STORE POSITION
+73E7 23      08870         INC   HL
+73E8 72      08880         LD    (HL),D
+73E9 23      08890         INC   HL
+73EA EB      08900         EX    DE,HL
+73EB 21606F  08910         LD    HL,ROW  :LOAD 5 BYTES OF INFO
+73EE 7E      08920         LD    A,(HL)
+73EF 010500  08930         LD    BC,5
+73F2 EDB0    08940         LDIR
+73F4 08      08950         EX    AF,AF'
+73F5 2A6C6F  08960         LD    HL,(NEWPOS)
+73F8 E5      08970 SPCLP1  PUSH  HL
+73F9 3A616F  08980         LD    A,(SKIP)
+73FC 4F      08990         LD    C,A
+---------------------------------------------------------------
+SET CRASH FLAG - установить флаг столкновения;
+BLANK COLOUR - определить цвет;
+BLANK FRONT OF PC - определить перед полицейской машиной;
+SHOULD BLANK FRONT - следует определить перед;
+STORE NEW UNDERNEATH - записать вновь то, что остается под;
+IF NON_EXIST - если не существует;
+STORE UNDERNEATH POLICE CAR -записать то, что под полицейской
+машиной; 
+STORAGE LOC - ячейка памяти;
+STORE POSITION - записать позицию.
+LOAD 5 BYTES OF INFO - загрузить 5 байтов информации;
+
+73FD 09      09000         ADD   HL,BC
+73FE CB44    09010         BIT   0,H
+7400 2804    09020         JR    Z,NSSPS
+7402 7C      09030         LD    A,H
+7403 C607    09040         ADD   A,7
+7405 67      09050         LD    H,A
+7406 3A626F  09060 NSSPS   LD    A,(FILL)
+7409 A7      09070         AND   A
+740A 280F    09080         JR    Z,NXTSPC
+740C 4F      09090         LD    C,A
+740D E7      09100 SPCLP2  PUSH  HL      :RESTORE CHAR
+740E 0608    09110         LD    B,B
+7410 7E      09120 SPCLP   LD    A,(HL)  :STORE SCREEN FIRST
+7411 12      09130         LD    (DE),A
+7412 13      09140         INC   DE
+7413 24      09150         INC   H
+7414 10FA    09160         DJNZ  SPCLP3
+7416 E1      09170         POP   HL
+7417 23      09180         INC   HL      :NEXT CHAR
+7418 0D      09190         DEC   C
+7419 20F2    09200         JR    NZ,SPCLP2
+741B E1      09210 NXTSRC  POP   HL
+741C 08      09220         EX    AF,AF'  :UPD ROW COUNT
+741D 3D      09230         DEC   A
+741E 280F    09240         JR    Z,SPSATR:RESTORE POLICE ATTR
+7420 08      09250         EX    AF,AF'
+7421 0E20    09260         LD    C,32
+7423 ED42    09270         SBC   HL,BC   :UP ONE LINE
+7425 CB44    09280         BIT   0,H     :CROSS SCREEN SECTION?
+7427 28CF    09290         JR    Z,SPCLP1
+7429 7C      09300         LD    A,H
+742A D607    09310         SUB   7
+742C 67      09320         LD    H,A
+742D 18C9    09330         JR    SPCLP1
+742F 2A636F  09340 SPCATR  LD    HL,(ATTPOS):ATTRIBUTE START POS
+7432 3A606F  09350         LD    A,(ROW)
+7435 08      09360         EX    AF,AF'
+7436 E5      09370 SPCAT1  PUSH  HL
+7437 3A616F  09380         LD    A,(SKIP)
+743A 4F      09390         LD    C,A
+743B 09      09400         ADD   HL,BC
+743C 3A626F  09410         LD    A,(FILL)
+743F A7      09420         AND   A
+7440 2803    09430         JR    Z,NXTSPA
+7442 4F      09440         LD    C,A
+7443 EDB0    09450         LDIR
+7445 E1      09460 NXTSPA  POP   HL
+7446 08      09470         EX    AF,AF'
+---------------------------------------------------------------
+RESTORE CHAR - восстановить литеру;
+STORE SCREEN FIRST -сначала записать экран;
+NEXT CHAR - следующая литера;
+UPD ROW COUNT - счетчик рядов;
+RESTORE  POLICE  ATTR  -  восстановить  атрибуты  полицейской
+машины; 
+UP ONE LINE - вверх на одну строку;
+CROSS SCREEN SECTION? - пересечена секция экрана?;
+ATTRIBUTE START POS - начальная позиция атрибутов.
+
+
+7447 3D      09480         DEC   A
+7448 C8      09490         RET   Z
+7449 08      09500         EX    AF,AF'
+744A 0E20    09510         LD    C,32
+744C ED42    09520         SBC   HL,BC
+744E 18E6    09530         JR    SPCAT1
+             09540 :
+             09550 :
+7450 3A6D6E  09560 RESPC   LD    A,(PCAREXT):TEST PC EXIST
+7453 A7      09570         AND   A
+7454 C8      09580         RET   Z
+7455 11606F  09590         LD    DE,ROW
+7458 21AF6D  09600         LD    HL,PCSTR+2
+7458 010500  09610         LD    BC,5
+745E EDB0    09620         LDIR          :RETRIEVE 5 INFO
+7460 EB      09630         EX    DE,HL   :DE STORAGE PTR
+7461 2AAD6D  09640         LD    HL,(PCSTR):LOAD POS
+7464 3A606F  09650         LD    A,(ROW)
+7467 08      09660         EX    AF,AF'
+7468 E5      09670 RPCLP1  PUSH  HL      :SAVE POS
+7469 3A616F  09680         LD    A,(SKIP)
+746C 4F      09690         LD    C,A
+746D 09      09700         ADD   HL,BC
+746E CB44    09710         BIT   0,H
+7470 2804    09720         JR    Z,NSPRS
+7472 3E07    09730         LD    A,7
+7474 84      09740         ADD   A,H
+7475 67      09750         LD    H,A
+7476 3A626F  09760 NSPRS   LD    A,(FILL)
+7479 A7      09770         AND   A
+747A 280F    09780         JR    Z,NXTRPC
+747C 4F      09790         LD    C,A
+747D E5      09800 RPCLP2  PUSH  HL
+747E 0608    09810         LD    B,8
+7480 1A      09820 RPCLP3  LD    A,(DE)  :RESTORE CHAR
+7481 77      09830         LD    (HL),A
+7482 13      09840         INC   DE
+7483 24      09850         INC   H
+7484 10FA    09860         DJNZ  RPCLP3
+7486 E1      09870         POP   HL
+7487 23      09880         INC   HL
+7488 0D      09890         DEC   C
+7489 20F2    09900         JR    NZ,RPCLP2
+748B E1      09910 NXTRPC  POP   HL
+748C 08      09920         EX    AF,AF'
+748D 3D      09930         DEC   A       :UPD ROW COUNT
+748E 280F    09940         JR    Z,RPCATR:RESTORE POLICE CAR
+7490 08      09950         EX    AF,AF'
+---------------------------------------------------------------
+TEST PC EXIST - проверить существование полицейской машины;
+RETRIEVE 5 INFO - найти 5 байтов информации;
+DE STORAGE PTR - указатель памяти;
+LOAD POS - загрузить позицию;
+SAVE POS - записать позицию;
+RESTORE CHAR - восстановить литеру;
+UPD ROW COUNT - счетчик рядов;
+RESTORE POLICE CAR - восстановить полицейскую машину;
+
+7491 0E20    09960         LD    C,32
+7493 ED42    09970         SBC   HL,BC   :MOVE UP ONE LINE
+7495 CB44    09980         BIT   0,H
+7497 28CF    09990         JR    Z,RPCLP1
+7499 7C      10000         LD    A,H
+749A D607    10010         SUB   7       :CROSS BOUNDARY
+749C 67      10020         LD    H,A
+749D 18C9    10030         JR    RPCLP1
+749F 2A636F  10040 RPCATR  LD    HL,(ATTPOS):ATTR START LOADING POS
+74A2 3A606F  10050         LD    A,(ROW)
+74A5 08      10060         EX    AF,AF'
+74A6 E5      10070 RPCAT1  PUSH  HL
+74A7 3A616F  10080         LD    A,(SKIP)
+74AA 4F      10090         LD    C,A
+74AB 09      10100         ADD   HL,BC
+74AC 3A626F  10110         LD    A,(FILL)
+74AF A7      10120         AND   A
+74B0 2805    10130         JR    Z,NXTRPA
+74B2 EB      10140         EX    DE,HL
+74B3 4F      10150         LD    C,A
+74B4 EDB0    10160         LDIR
+74B6 EB      10170         EX    DE,HL
+74B7 E1      10180 NXTRPA  POP   HL
+74B8 08      10190         EX    AF,AF'
+74B9 3D      10200         DEC   A
+74BA C8      10210         RET   Z
+74BB 08      10220         EX    AF,AF'
+74BC 0E20    10230         LD    C,32
+74BE ED42    10240         SBC   HL,BC
+74C0 18E4    10250         JR    RPCAT1
+             10260 :
+             10270 :
+74C2 3A7C6F  10280 FROG    LD    A,(CRHFLG):CRASH FLAG
+74C5 A7      10290         AND   A
+74C6 2017    10300         JR    NZ,FRGCRH:FROG CRASH
+74C8 325E6F  10310         LD    (UPDOWN),A:SET NO SCORE
+74CB CDE374  10320         CALL  REGFRG  :REGENERATE FROG
+74CE 217A6E  10330         LD    HL,FRGCYC:TEST MOVE
+74D1 35      10340         DEC   (HL)
+74D2 C0      10350         RET   NZ
+74D3 2B      10360         DEC   HL
+74D4 7E      10370         LD    A,(HL)  :RESET CYCLE COUNT
+74D5 23      10380         INC   HL
+74D6 77      10390         LD    (HL),A
+74D7 CD      10400         CALL  MOVFRG
+74DA 3A7C6F  10410         LD    A,(CRHFLG)
+74DD A7      10420         AND   A
+---------------------------------------------------------------
+MOVE UP ONE LINE - подняться на одну строку.
+ROSS BOUNDARY - пересечение границы;
+ATTR START LOADING POS - позиция начала загрузки атрибутов;
+CRASH FLAG - флаг столкновения;
+FROG CRASH - столкновение лягушки;
+SET NO SCORE - установить отсутствие счета;
+REGENERATE FROG - регенерировать лягушку;
+TEST MOVE - проверить движение;
+RESET CYCLE COUNT - сбросить счетчик цикла;
+
+74DE CB      10430         RET   Z
+74DF CD      10440 FRGCRH  CALL  CRASH
+74E2 C9      10450         RET
+             10460 :
+             10470 :********  REGFRG  ********
+             10480 :
+             10490 :   REGENERATE FROG IF ANY LEFT
+             10500 :   SET GAMFLG  TO 0 IF NONE LEFT
+             10510 :
+74E3 3A796E  10520 REGFRG  LD    A,(FRGEXT)
+74E6 A7      10530         AND   A
+74E7 C0      10540         RET   NZ      :RETURN IF EXIST
+74E8 21816E  10550         LD    HL,FRGDB
+74EB  11796  10560         LD    DE,FRGEXT
+74EE 010800  10570         LD    BC,8
+74F1 EDB0    10580         LDIR
+74F3 21846E  10590         LD    HL,FRGSTN:UPDATE FROG STATION
+74F6 35      10600         DEC   (HL)    :MOVE 3 CHARACTER LEFT
+74F7 35      10610         DEC   (HL)
+74F8 35      10620         DEC   (HL)
+74F9 2A7C6E  10630         LD    HL,(FROGPOS)
+74FC 22786F  10640         LD    (OLDFRG),HL
+74FF 227A6F  10650         LD    (NEWFRG),HL
+7502 21896D  10660         LD    HL,FRGSTR:INIT FROG STR FOR RES
+7505 118A6D  10670         LD    DE,FRGSTR+1:BLANK FROG STORE
+7508 012300  10680         LD    BC,35
+750B 3600    10690         LD    (HL),0
+750D EDB0    10700         LDIR
+750F C9      10710         RET
+             10720 :
+             10730 :********  MOVFRG  ********
+             10740 :
+             10750 :   MOVE FROG, STORE AND RESTORE
+             10760 :
+7510 AF      10770 MOVFRG  XOR   A
+7511 2120E0  10780         LD    HL,0E020H:H=>32, L=>42
+7514 4F      10790         LD    C,A     :C=>ABS MOVEMENT
+7515 08      10800         EX    AF,AF'
+7516 3EDF    10810         LD    A,0DFH  :TEST RIGHT
+7518 DBFE    10820         IN    A,(0DFH)
+751A E601    10830         AND   1
+751C 2006    10840         JR    NZ,LEFT
+751E 0C      10850         INC   C
+751F 11D769  10860         LD    DE,FROG2
+7522 0601    10870         LD    B,1
+---------------------------------------------------------------
+REGENERATE  FROG  IF  ANY LEFT SET GAMFRG TO 0 IF NONE LEFT -
+регенерировать   лягушку,   если   они   еще  остались,  если
+нет,сбросить GAMFRG; 
+RETURN IF EXIST - возврат, если существует.
+UPDATE FROG STATION - обновить лягушатник;
+MOVE 3 CHARACTER LEFT - сдвинуться на 3 литеры влево;
+INIT FROG STR FOR RES - ?
+BLANK FROG STORE - опробелить память для лягушки;
+MOVE  FROG, STORE AND RESTORE - переместить лягушку, записать
+и восстановить; 
+MOVEMENT - движение;
+TEST RIGHT - проверка правого движения;
+
+
+7524 3EDF    10880         LD    A,0DFH  :TEST LEFT
+7526 DBFE    10890         IN    A,(0DFN)
+7528 E604    10900         AND   4
+752A 2006    10910         JR    NZ,DOWN
+752C 0D      10920         DEC   C
+752D 11176A  10930         LD    DE,FROG4
+7530 0603    10940         LD    B,3
+7532 3EFD    10950 DOWN    LD    A,0FDH  :TEST DOWN
+7534 DBFE    10960         IN    A,(OFDH)
+7536 E601    10970         AND   1
+7538 200B    10980         JR    NZ,UP
+753A 79      10990         LD    A,,C
+753B 85      11000         ADD   A,L     :ADD 32
+753C 4F      11010         LD    C,A
+753D 08      11020         EX    AF,AF'
+753E 3D      11030         DEC   A
+753F 08      11040         EX    AF,AF'  :DEC UP/DWN FLG
+7540 11F769  11050         LD    DE,FROG3
+7543 0602    11060         LD    B,2
+7545 3EF7    11070 UP      LD    A,0F7H  :TEST UP
+7547 DBFE    11080         IN    A,(0F7H)
+7549 E601    11090         AND   1
+754B 200B    11100         JR    NZ,VALID
+754D 79      11110         LD    A,C
+754E 84      11120         ADD   A,H     :ADD -32
+754F 4F      11130         LD    C,A
+7550 08      11140         EX    AF,AF'
+7551 3C      11150         INC   A
+7552 08      11160         EX    AF,AF'
+7553 11B769  11170         LD    DE,FROG1
+7556 0600    11180         LD    B,0
+7558 78      11190 VALID   LD    A,B     :STORE TEMP DIR
+7559 327D6F  11200         LD    (TEMDIR),A
+755C ED53806F11210         LD    (TEMSHR),DE:STORE TEMP SHAPE
+7560 AF      11220         XOR   A
+7561 B9      11230         CP    C
+7562 C8      11240         RET   Z       :IF NO MOVE GO BACK
+7563 2A786F  11250         LD    HL,(OLDFRG)
+7566 CB79    11260         BIT   7,C     :TEST -VE
+7568 47      11270         LD    B,A
+7569 1E07    11280         LD    E,7     :FOR BOUNDARY ADJ
+756B 2803    11290         JR    Z,NETDWN:NET MOVE RHT,DWN
+756D 05      11300         DEC   B
+756E 1EF9    11310         LD    E,-7
+---------------------------------------------------------------
+TEST LEFT - проверка левого движения;
+TEST DOWN - проверка движения вниз;
+ADD 32 - прибавить 32;
+DEC UP/DWN FLG - уменьшить флаг вверх/вниз;
+TEST UP - проверить движение вверх.
+ADD -32 - добавить 32;
+STORE TEMP DIR - записать временное направление;
+STORE TEMP SHAPEM - записать временное изображение;
+IF NO MOVE GO BACK - если нет перемещения, перейти назад;
+TEST -VE - проверить;
+FOR BOUNDARY ADJ - для настройки границ;
+NET MOVE RHT,DWN - движение вправо, вниз;
+
+7570 09      11320 NETDWN  ADD   HL,BC
+7571 CB44    11330         BIT   0,H
+7573 2803    11340         JR    Z,VALID1:NO CROSS BOUNDARY
+7575 7C      11350         LD    A,H
+7576 83      11360         ADD   A,E
+7577 67      11370         LD    H,A     :ADJ HOB
+7578 227E6F  11380 VALID1  LD    (TEMPOS),HL
+757B EB      11390         EX    DE,HL
+757C 3E40    11400         LD    A,40H   :TEST UPSCR
+757E BA      11410         CP    D
+757F 7B      11420         LD    A,E
+7580 2004    11430         JR    NZ,VALID2
+7582 FE20    11440         CP    20H
+7584 382F    11450         JR    C,NVALID
+7586 E61F    11460 VALID2  AND   1FH     :TEST RIGHT BOUNDARY
+7588 FE1F    11470         CP    1FH
+758A 2829    11480         JR    Z,NVALID
+758C 21BE50  11490         LD    NZ,50BEH:TEST BOT BOUNDARY
+758F A7      11500         AND   A
+7590 ED52    11510         SBC   HL,DE
+7592 3821    11520         JR    C,NVALID
+7594 217E50  11530         LD    HL,507EH:TEST FROG STATION
+7597 ED52    11540         SBC   HL,DE
+7599 3011    11550         JR    NC,NVALID
+759B 7B      11560         LD    A,E     :TEST WITHIN BOX
+759C E61F    11570         AND   1FH
+759E 67      11580         LD    H,A
+759F 3A846E  11590         LD    A,(FRGSTN)
+75A2 FEA0    11600         CP    0A0H    :TEST LAST FROG
+75A4 3806    11610         JR    C,VALID :NO MORE FROG STATION
+75A6 3C      11620         INC   A       :WHEN NO FROG LEFT
+75A7 E61F    11630         AND   1FH
+75A9 94      11640         SUB   H
+75AA 3009    11650         JR    NC,NVALID
+75AC ED537A6F11660 NVALID  LD    (NEWFRG),DE:STORE NEW POS
+75B0 08      11670         EX    AF,AF'
+75B1 325E6F  11680         LD    (UPDWN),A
+75B4 08      11690         EX    AF,AF'
+75B5 2A786F  11700 NVALID  LD    HL,(OLDFRG):TEST OLDFRG=NEWFRG
+75B8 A7      11710         AND   A
+75B9 ED52    11720         SBC   HL,DE
+75BB 7D      11730         LD    A,L
+75BC B4      11740         OR    H
+75BD CB      11750         RET   Z       :RETURN IF SAME
+---------------------------------------------------------------
+NO CROSS BOUNDARY - нет пересечения границ;
+ADJ HOB - настройка старшего байта;
+TEST RIGHT BOUNDARY - проверить правую границу;
+TEST BOT BOUNDARY - проверить нижнюю границу;
+TEST FROG STATION - проверить лягушатник;
+TEST WITHIN BOX - проверить допустимость значений;
+TEST LAST FROG - проверить последнюю лягушку;
+NO MORE FROG STATION - больше нет в лягушатнике;
+WHEN NO FROG LEFT - когда нет лягушек;
+STORE NEW POS - записать новую позицию.
+TEST OLDFRG=NEWFRG - проверить;
+RETURN IF SAME - возврат, если совпадение;
+
+75BE CDD675  11760         CALL  RESFRG  :RESTORE FROG
+75C1 2A7A6F  11770         LD    HL,(NEWFRG):UPDATE OLD FROG POS
+75C4 22786F  11780         LD    (OLDFRG),HL
+75C7 217D6F  11790         LD    HL,TEMDIR
+75CA 117B6E  11800         LD    DE,FRGDIR
+75CD 010500  11810         LD    BC,5
+75D0 EDB0    11820         LDIR
+75D2 CD2876  11830         CALL  STRFRG
+75D5 C9      11840         RET
+             11850 :
+             11860 :
+75D6 11896D  11870 RESFRG  LD    DE,FRGSTR:STORAGE PTR
+75D9 2A786F  11880         LD    HL,(OLDFRG):RESTORE FROM OLDPOS
+75DC E5      11890         PUSH  HL
+75DD 3E02    11900         LD    A,2     :ROW COUNTER
+75DF 08      11910         EX    AF,AF'
+75E0 E5      11920 RFRLP1  PUSH  HL
+75E1 0E02    11930         LD    C,2     :COLUMN COUNTER
+75E3 E5      11940 RFRLP2  PUSH  HL
+75E4 0608    11950         LD    B,8
+75E6 1A      11960 RFRLP3  LD    A,(DE)  :RESTORE FROM DB
+75E7 77      11970         LD    (HL),A  :ON TO SCREEN
+75E8 13      11980         INC   DE
+75E9 24      11990         INC   H       :NEXT CHAR BYTE
+75EA 10FA    12000         DJNZ  RFRLP3
+75EC E1      12010         POP   HL
+75ED 23      12020         INC   HL
+75EE 0D      12030         DEC   C       :COLUMN COUNTER
+75EF 20F2    12040         JR    NZ,RFRLP2
+75F1 E1      12050         POP   HL
+75F2 08      12060         EX    AF,AF'
+75F3 3D      12070         DEC   A       :ROW COUNT
+75F4 2810    12080         JR    Z,RFRATR
+75F6 08      12090         EX    AF,AF'
+75F7 A7      12100         AND   A
+75F8 0E20    12110         LD    C,32    :UP ONE LINE
+75FA ED42    12120         SBC   HL,BC
+75FC CB44    12130         BIT   0,H
+75FE 28E0    12140         JR    Z,RFRLP1
+7600 7C      12150         LD    A,H
+7601 D607    12160         SUB   7
+7603 67      12170         LD    H,A
+7604 18DA    12180         JR    RFRLP1
+7606 E1      12190 RFRATR  POP   HL
+7607 7C      12200         LD    A,H
+7608 E618    12210         AND   18H
+---------------------------------------------------------------
+RESTORE FROG - восстановить лягушку;
+UPDATE OLD FROG POS - обновить позицию старой лягушки;
+STORAGE PTR - указатель памяти;
+RESTORE FROM OLDPOS - восстановить низ;
+ROW COUNTER - счетчмк рядов;
+COLUMN COUNTER - счетчик колонок;
+RESTORE FROM DB - восстановить из базы данных;
+ON TO SCREEN - на экран;
+NEXT CHAR BYTE - следующий байт литеры;
+UP ONE LINE - вверх на одну строку.
+
+
+760A CB2F    12220         SRA   A
+760C CB2F    12230         SRA   A
+760E CB2F    12240         SRA   A
+7610 C658    12250         ADD   A,58H
+7612 67      12260         LD    H,A
+7613 3E02    12270         LD    A,2     :ROW COUNTER
+7615 08      12280         EX    AF,AF'
+7616 E5      12290 RFRAT1  PUSH  HL
+7617 EB      12300         EX    DE,HL
+7618 0E02    12310         LD    C,2     :RESTORE ATTR
+761A EDB0    12320         LDIR
+761C EB      12330         EX    DE,HL
+761D E1      12340         POP   HL
+761E 08      12350         EX    AF,AF'
+761F 3D      12360         DEC   A       :UPDATE ROW COUNTER
+7620 C8      12370         RET   Z
+7621 08      12380         EX    AF,AF'
+7622 0E20    12390         LD    C,32
+7624 ED42    12400         SBC   HL,BC
+7626 18EE    12410         JR    RFRAT1
+             12420 :
+             12430 :
+7628 11896D  12440 SIRFRG  LD    DE,FRGSTR
+762B 2A7A6F  12450         LD    HL,(NEWFRG):STORE BASE ON NEWPOS
+762E D9      12460         EXX
+762F 2A7E6E  12470         LD    HL,(FROGSH):LOAD SHAPE AS WELL
+7632 D9      12480         EXX
+7633 E5      12490         PUSH  HL
+7634 3E02    12500         LD    A,2
+7636 08      12510         EX    AF,AF'
+7637 E5      12520 SFRLP1  PUSH  HL
+7638 0E02    12530         LD    C,2
+763A E5      12540 SFRLP2  PUSH  HL
+763B 0608    12550         LD    B,8     :STORE AND LOAD A CHAR
+763D 7E      12560 SFRLP3  LD    A,(HL)
+763E 12      12570         LD    (DE),A
+763F D9      12580         EXX
+7640 7E      12590         LD    A,(HL)
+7641 23      12600         INC   HL
+7642 D9      12610         EXX
+7643 77      12620         LD    (HL),A
+7644 13      12630         INC   DE
+7645 24      12640         INC H
+7646 10F5    12650         DJNZ  SFRLP3
+7648 E1      12660         POP   HL
+7649 23      12670         INC   HL      :NEXT CHAR
+764A 0D      12680         DEC   C
+764B 20ED    12690         JR    NZ,SFRLP2
+764D E1      12700         POP   HL
+764E 08      12710         EX    AF,AF'
+---------------------------------------------------------------
+RESTORE ATTR - восстановить атрибуты;
+UPDATE ROW COUNTER - обновить счетчик рядов;
+STORE BASE ON NEWPOS - записать базу в;
+LOAD SHAPE AS WELL - загрузить также изображение;
+STORE AND LOAD A CHAR - записать и загрузить литеру;
+NEXT CHAR - следующая литера;
+
+
+764F 3D      12720         DEC   A
+7650 2810    12730         JR    Z,SFRATR
+7652 08      12740         EX    AF,AF'
+7653 A7      12750         AND   A
+7654 0E20    12760         LD    C,32
+7656 ED42    12770         SBC   HL,BC   :NEXT ROW
+7658 CB44    12780         BIT   0,H
+765A 28DB    12790         JR    Z,SFRLP1
+765C 7C      12800         LD    A,H
+765D D607    12810         SUB   7
+765F 67      12820         LD    H,A
+7660 1805    12830         JR    SFRLP1
+7662 E1      12840 SFRATR  POP   HL
+7663 7C      12850         LD    A,H     :CALCULATE ATTR POS
+7664 E618    12860         AND   18H
+7666 CB2F    12870         SRA   A
+7668 CB2F    12880         SRA   A
+766A CB2F    12890         SRA   A
+766C C658    12900         ADD   A,58H
+766E 67      12910         LD    H,A
+766F 3E02    12920         LD    A,2
+7661 08      12930         EX    AF,AF'
+7672 0602    12940 SFRAT1  LD    B,2
+7674 E5      12950         PUSH  HL
+7675 7E      12960 SFRATLP LD    A,(HL)
+7676 12      12970         LD    (DE),A
+7677 3604    12980         LD    (HL),4  :FILL FROG ATTR
+7679 23      12990         INC   HL
+767A 13      13000         INC   DE
+767B E607    13010         AND   7       :TEST CRASH
+767D 2805    13020         JR    Z,NFROG3
+767F 3E01    13030         LD    A,1
+7681 327C6F  13040         LD    (CRHFLG),A
+7684 10EF    13050 NFROG3  DJNZ  SFRATLP
+7686 E1      13060         POP   HL
+7687 08      13070         EX    AF,AF'
+7688 3D      13080         DEC   A
+7689 C8      13090         RET   Z
+768A 08      13100         EX    AF,AF'
+768B 0E20    13110         LD    C,32
+768D ED42    13120         SBC   HL,BC
+768F 18E1    13130         JR    SFRAT1
+             13140 :
+             13150 :
+7691 AF      13160 CRASH   XOR   A
+7692 327C6F  13170         LD    (CRHFLG),A:RESET CRASH FLAG
+7695 32796E  13180         LD    (FRGEXT),A:SET FROG NONEXIST
+7698 CDA776  13190         CALL  FRGDIE
+7698 CDD675  13200         CALL  RESFRG
+769E 21826F  13210         LD    HL,NUMFRG
+---------------------------------------------------------------
+NEXT ROW - следующий ряд.
+CALCULATE ATTR POS - вычислить позицию атрибута;
+FILL FROG ATTR - заполнить атрибуты лягушки;
+TEST CRASH - проверить на столкновение;
+RESET CRASH FLAG - сбросить флаг столкновения;
+SET FROG NONEXIST - установить несуществование для лягушки;
+
+
+76A1 35      13220         DEC   (HL)    :DECREASE FROG NUMBER
+76A2 C0      13230         RET NZ
+76A3 32776F  13240         LD    (GAMFLG),A:ZEROISE GAME FLAG
+76A6 C9      13250         RET           :WHEN NO FROG LEFT
+             13260 :
+             13270 :
+76A7 2A786F  13280         LD    HL,(OLDFRG):0LD POS OF FRG
+76AA 010240  13290         LD    BC,4002H:RED COLOUR
+76AD D9      13300         EXX
+76AE 21396F  13310         LD    HL,DIETON     :SET DIE TONE
+76B1 D9      13320         EXX
+76B2 7C      13330         LD    A,H
+76B3 B8      13340         CP    B       :TEST END OF JOURNEY
+76B4 2016    13350         JR    NZ,NOTEND
+76B6 7D      13360         LD    A,L
+76B7 B8      13370         CP    B
+76B8 3012    13380         JR    NZ,NOTEND
+76BA 11466F  13390         LD    DE,SCORE+3:100 PTS BONUS
+76BD EB      13400         EX    DE,HL
+76BE 34      13410         INC   (HL)
+76BF 21476F  13420         LD    HL,SCORE+4
+76C2 CD4B77  13430         CALL  DISSCR
+76C5 0E06    13440         LD    C,6     :YELLOW
+76C7 D9      13450         EXX
+76C8 21156F  13460         LD    HL,HOMTON
+76CB D0      13470         EXX
+76CC 79      13480 NOTEND  LD    A,C
+76CD 32656F  13490         LD    (ATTR),A
+76D0 2A786F  13500         LD    HL,(OLDFRG)
+76D3 ED5B7E6E13510         LD    DE,(FROGSH)
+76D7 CD7A70  13520         CALL  DRWFRG
+76DA 112000  13530         LD    DE,32   :LINE ADJUST
+76DD 16      13540         ADD   HL,DE
+76DE 08      13550         EX    AF,AF'
+76DF 3A656F  13560         LD    A,(ATTR)
+76E2 08      13570         EX    AF,AF'
+76E3 0605    13580         LD    B,5
+76E5 C5      13590 FLASLP  PUSH  BC
+76E6 E5      13600         PUSH  HL      :ATTRIBUTE PTR
+76E6 AF      13610         XOR   A       :BLACK INK BLACK PAPER
+76E8 77      13620         LD    (HL),A
+76E9 23      13630         INC   HL
+76EA 77      13640         LD    (HL),A
+76EB ED52    13650         SBC   HL,DE
+---------------------------------------------------------------
+DECREASE FROG NUMBER - уменьшить число лягушек;
+ZEROISE GAME FLAG - обнулить флаг игры;
+WHEN NO FROG LEFT - когда лягушек не осталось;
+OLD POS OF FRG - старая позиция лягушки;
+RED COLOUR - красный цвет;
+SET DIE TONE - установить ноту смерти;
+TEST END OF JOURNEY - проверить конец путешествия.
+100 PTS BONUS - премия 100 очков;
+YELLOW - желтый:
+LINE ADJUST - корректировка строки;
+ATTRIBUTE PTR - указатель атрибутов;
+BLACK INK BLACK PAPER - черные чернила черная бумага;

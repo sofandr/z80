@@ -1,0 +1,932 @@
+
+         │POP HL    │E1     │ - │  - │   -  │ - │  10    │             │
+         │POP IX    │DD E1  │ - │  - │   -  │ - │  14    │             │
+         │POP IY    │FD E1  │ - │  - │   -  │ - │  14    │             │
+         │EX (SP),HL│E3     │ - │  - │   -  │ - │  19    │             │
+         │EX (SP),IX│DD E3  │ - │  - │   -  │ - │  23    │             │
+         │EX (SP),IY│FD E3  │ - │  - │   -  │ - │  23    │             │
+         └──────────┴───────┴───┴────┴──────┴───┴────────┴─────────────┘
+
+         Команды обращения к ПЗУ.                        Таблица 2.22.
+         ┌──────────┬───────┬──────────────────┬────────┬──────────────┐
+         │Мнемоника │  Код  │Влияние на флаги  │ Время  │  Примечание  │
+         │          │       ├───┬────┬─────┬───┤        │              │
+         │          │       │ C │  Z │ P/V │ S │(тактов)│              │
+         ├──────────┼───────┼───┼────┼─────┼───┼────────┼──────────────┤
+         │RST 0     │C7     │ - │  - │  -  │ - │  11    │              │
+         │RST 8     │CF     │ - │  - │  -  │ - │  11    │              │
+         │RST 10    │D7     │ - │  - │  -  │ - │  11    │              │
+         │RST 18    │DF     │ - │  - │  -  │ - │  11    │              │
+         │RST 20    │E7     │ - │  - │  -  │ - │  11    │              │
+         │RST 28    │EF     │ - │  - │  -  │ - │  11    │              │
+         │RST 30    │F7     │ - │  - │  -  │ - │  11    │              │
+         │RST 38    │FF     │ - │  - │  -  │ - │  11    │              │
+         └──────────┴───────┴───┴────┴─────┴───┴────────┴──────────────┘
+
+         Команды вызова подпрограмм и возврата            Таблица 2.23.
+         ┌──────────┬───────┬──────────────────┬────────┬──────────────┐
+         │Мнемоника │  Код  │Влияние на флаги  │ Время  │  Примечание  │
+         │          │       ├───┬────┬─────┬───┤        │              │
+         │          │       │ C │  Z │ P/V │ S │(тактов)│              │
+         ├──────────┼───────┼───┼────┼─────┼───┼────────┼──────────────┤
+         │CALL NN   │CD N N │ - │  - │  -  │ - │  17    │              │
+         │CALL C,NN │DC N N │ - │  - │  -  │ - │ 10/17  │Условие выпол-│
+         │          │       │   │    │     │   │        │няется/нет    │
+         │CALL NC,NN│D4 N N │ - │  - │  -  │ - │ 10/17  │---"---"---"--│
+         │CALL Z,NN │CC N N │ - │  - │  -  │ - │ 10/17  │---"---"---"--│
+         │CALL M,NN │FC N N │ - │  - │  -  │ - │ 10/17  │---"---"---"--│
+         │CALL P,NN │F4 N N │ - │  - │  -  │ - │ 10/17  │---"---"---"--│
+         │CALL PE,NN│EC N N │ - │  - │  -  │ - │ 10/17  │---"---"---"--│
+         │CALL PO,NN│E4 N N │ - │  - │  -  │ - │ 10/17  │---"---"---"--│
+         └──────────┴───────┴───┴────┴─────┴───┴────────┴──────────────┘
++                                  - 242 -
+
+                                               Продолжение таблицы 2.23
+         ┌──────────┬───────┬──────────────────┬────────┬──────────────┐
+         │Мнемоника │  Код  │Влияние на флаги  │ Время  │  Примечание  │
+         │          │       ├───┬────┬─────┬───┤        │              │
+         │          │       │ C │  Z │ P/V │ S │(тактов)│              │
+         ├──────────┼───────┼───┼────┼─────┼───┼────────┼──────────────┤
+         │RET       │C9     │ - │  - │  -  │ - │  10    │              │
+         │RET C     │D8     │ - │  - │  -  │ - │  5/11  │Условие выпол-│
+         │          │       │   │    │     │   │        │няется/нет    │
+         │RET NC    │D0     │ - │  - │  -  │ - │  5/11  │---"---"---"--│
+         │RET Z     │C8     │ - │  - │  -  │ - │  5/11  │---"---"---"--│
+         │RET NZ    │C0     │ - │  - │  -  │ - │  5/11  │---"---"---"--│
+         │RET P     │F0     │ - │  - │  -  │ - │  5/11  │---"---"---"--│
+         │RET M     │F8     │ - │  - │  -  │ - │  5/11  │---"---"---"--│
+         │RET PE    │E8     │ - │  - │  -  │ - │  5/11  │---"---"---"--│
+         │RET P0    │E0     │ - │  - │  -  │ - │  5/11  │---"---"---"--│
+         └──────────┴───────┴───┴────┴─────┴───┴────────┴──────────────┘
+
+         Команды сдвига битов.                            Таблица 2.24.
+         ┌────────────┬──────────┬─────────────────┬────────┬──────────┐
+         │Мнемоника   │  Код     │Влияние на флаги │ Время  │Примечание│
+         │            │          ├───┬───┬─────┬───┤        ├──────────┤
+         │            │          │ C │ Z │ P/V │ S │(тактов)│          │
+         ├────────────┼──────────┼───┼───┼─────┼───┼────────┼──────────┤
+         │SRL A       │CB 3F     │ * │ * │  P  │ * │   8    │          │
+         │SRL H       │CB 3C     │ * │ * │  P  │ * │   8    │          │
+         │SRL L       │CB 3D     │ * │ * │  P  │ * │   8    │          │
+         │SRL B       │CB 38     │ * │ * │  P  │ * │   8    │          │
+         │SRL C       │CB 39     │ * │ * │  P  │ * │   8    │          │
+         │SRL D       │CB 3A     │ * │ * │  P  │ * │   8    │          │
+         │SRL E       │CB 3B     │ * │ * │  P  │ * │   8    │          │
+         │SRL (HL)    │CB 3E     │ * │ * │  P  │ * │  15    │          │
+         │SRL (IX+S)  │DD CB S 3E│ * │ * │  P  │ * │  23    │          │
+         │SRL (IY+S)  │FD CB S 3E│ * │ * │  P  │ * │  23    │          │
+         │SRA A       │CB 2F     │ * │ * │  P  │ * │   8    │          │
+         │SRA H       │CB 2C     │ * │ * │  P  │ * │   8    │          │
+         │SRA L       │CB 2D     │ * │ * │  P  │ * │   8    │          │
+         │SRA B       │CB 28     │ * │ * │  P  │ * │   8    │          │
+         │SRA C       │CB 29     │ * │ * │  P  │ * │   8    │          │
+         │SRA D       │CB 2A     │ * │ * │  P  │ * │   8    │          │
+         │SRA E       │CB 2B     │ * │ * │  P  │ * │   8    │          │
+         │SRA (HL)    │CB 2E     │ * │ * │  P  │ * │  15    │          │
+         │SRA (IX+S)  │DD CB S 2E│ * │ * │  P  │ * │  23    │          │
+         │SRA (IY+S)  │FF CB S 2E│ * │ * │  P  │ * │  23    │          │
+         │SLA A       │CB 27     │ * │ * │  P  │ * │   8    │          │
+         │SLA H       │CB 24     │ * │ * │  P  │ * │   8    │          │
+         │SRA L       │CB 25     │ * │ * │  P  │ * │   8    │          │
+         └────────────┴──────────┴───┴───┴─────┴───┴────────┴──────────┘
++                                  - 243 -
+
+
+                                             Продолжение таблицы 2.24
+         ┌────────────┬──────────┬─────────────────┬────────┬──────────┐
+         │Мнемоника   │  Код     │Влияние на флаги │ Время  │Примечание│
+         │            │          ├───┬───┬─────┬───┤        ├──────────┤
+         │            │          │ C │ Z │ P/V │ S │(тактов)│          │
+         ├────────────┼──────────┼───┼───┼─────┼───┼────────┼──────────┤
+         │SRA B       │CB 20     │ * │ * │  P  │ * │   8    │          │
+         │SRA C       │CB 21     │ * │ * │  P  │ * │   8    │          │
+         │SRA D       │CB 22     │ * │ * │  P  │ * │   8    │          │
+         │SRA E       │CB 23     │ * │ * │  P  │ * │   8    │          │
+         │SRA (HL)    │CB 26     │ * │ * │  P  │ * │  15    │          │
+         │SRA (IX+S)  │DD CB S 26│ * │ * │  P  │ * │  23    │          │
+         │SRA (IY+S)  │FF CB S 26│ * │ * │  P  │ * │  23    │          │
+         └────────────┴──────────┴───┴───┴─────┴───┴────────┴──────────┘
+
+
+         Команды ротации битов.                           Таблица 2.25.
+         ┌────────────┬──────────┬─────────────────┬────────┬──────────┐
+         │Мнемоника   │  Код     │Влияние на флаги │ Время  │Примечание│
+         │            │          ├───┬───┬─────┬───┤        ├──────────┤
+         │            │          │ C │ Z │ P/V │ S │(тактов)│          │
+         ├────────────┼──────────┼───┼───┼─────┼───┼────────┼──────────┤
+         │RL A        │CB 17     │ * │ * │  P  │ * │   8    │          │
+         │RL H        │CB 14     │ * │ * │  P  │ * │   8    │          │
+         │RL L        │CB 15     │ * │ * │  P  │ * │   8    │          │
+         │RL B        │CB 10     │ * │ * │  P  │ * │   8    │          │
+         │RL C        │CB 11     │ * │ * │  P  │ * │   8    │          │
+         │RL D        │CB 12     │ * │ * │  P  │ * │   8    │          │
+         │RL E        │CB 13     │ * │ * │  P  │ * │   8    │          │
+         │RL (HL)     │CB 16     │ * │ * │  P  │ * │  15    │          │
+         │RL (IX+S)   │DD CB S 16│ * │ * │  P  │ * │  23    │          │
+         │RL (IY+S)   │FD CB S 16│ * │ * │  P  │ * │  23    │          │
+         │RR A        │CB 1F     │ * │ * │  P  │ * │   8    │          │
+         │RR H        │CB 1C     │ * │ * │  P  │ * │   8    │          │
+         │RR L        │CB 1D     │ * │ * │  P  │ * │   8    │          │
+         │RR B        │CB 18     │ * │ * │  P  │ * │   8    │          │
+         │RR C        │CB 19     │ * │ * │  P  │ * │   8    │          │
+         │RR D        │CB 1A     │ * │ * │  P  │ * │   8    │          │
+         │RR E        │CB 1B     │ * │ * │  P  │ * │   8    │          │
+         │RR (HL)     │CB 1E     │ * │ * │  P  │ * │  15    │          │
+         │RR (IX+S)   │DD CB S 1E│ * │ * │  P  │ * │  23    │          │
+         │RR (IY+S)   │FD CB S 1E│ * │ * │  P  │ * │  23    │          │
+         │RLC A       │CB 07     │ * │ * │  P  │ * │   8    │          │
+         │RLC H       │CB 04     │ * │ * │  P  │ * │   8    │          │
+         │RLC L       │CB 05     │ * │ * │  P  │ * │   8    │          │
+         │RLC B       │CB 00     │ * │ * │  P  │ * │   8    │          │
+         └────────────┴──────────┴───┴───┴─────┴───┴────────┴──────────┘
++                                    - 244 -
+
+                                               Продолжение таблицы 2.25.
+         ┌────────────┬──────────┬─────────────────┬────────┬──────────┐
+         │Мнемоника   │  Код     │Влияние на флаги │ Время  │Примечание│
+         │            │          ├───┬───┬─────┬───┤        ├──────────┤
+         │            │          │ C │ Z │ P/V │ S │(тактов)│          │
+         ├────────────┼──────────┼───┼───┼─────┼───┼────────┼──────────┤
+         │RLC C       │CB 01     │ * │ * │  P  │ * │   8    │          │
+         │RLC D       │CB 02     │ * │ * │  P  │ * │   8    │          │
+         │RLC E       │CB 03     │ * │ * │  P  │ * │   8    │          │
+         │RLC (HL)    │CB 06     │ * │ * │  P  │ * │  15    │          │
+         │RLC (IX+S)  │DD CB S 06│ * │ * │  P  │ * │  23    │          │
+         │RLC (IY+S)  │FD CB S 06│ * │ * │  P  │ * │  23    │          │
+         │RRC A       │CB 0F     │ * │ * │  P  │ * │   8    │          │
+         │RRC H       │CB 0C     │ * │ * │  P  │ * │   8    │          │
+         │RRC L       │CB 0D     │ * │ * │  P  │ * │   8    │          │
+         │RRC B       │CB 08     │ * │ * │  P  │ * │   8    │          │
+         │RRC C       │CB 09     │ * │ * │  P  │ * │   8    │          │
+         │RRC D       │CB 0A     │ * │ * │  P  │ * │   8    │          │
+         │RRC E       │CB 0B     │ * │ * │  P  │ * │   8    │          │
+         │RRC (HL)    │CB 0E     │ * │ * │  P  │ * │  15    │          │
+         │RRC (IX+S)  │DD CB S 0E│ * │ * │  P  │ * │  23    │          │
+         │RRC (IY+S)  │FD CB S 0E│ * │ * │  P  │ * │  23    │          │
+         │RLA         │17        │ * │ - │  -  │ - │   4    │          │
+         │RRA         │1F        │ * │ - │  -  │ - │   4    │          │
+         │RLCA        │07        │ * │ - │  -  │ - │   4    │          │
+         │RRCA        │0F        │ * │ - │  -  │ - │   4    │          │
+         │RLD         │ED 6F     │ - │ * │  P  │ * │  18    │          │
+         │RRD         │ED 67     │ - │ * │  P  │ * │  18    │          │
+         └────────────┴──────────┴───┴───┴─────┴───┴────────┴──────────┘
+
+          Команды включения битов.                        Таблица 2.26.
+         ┌────────────┬──────────┬─────────────────┬────────┬──────────┐
+         │Мнемоника   │  Код     │Влияние на флаги │ Время  │Примечание│
+         │            │          ├───┬───┬─────┬───┤        ├──────────┤
+         │            │          │ C │ Z │ P/V │ S │(тактов)│          │
+         ├────────────┼──────────┼───┼───┼─────┼───┼────────┼──────────┤
+         │SET 0,A     │CB C7     │ - │ - │  -  │ - │   8    │          │
+         │SET 0,H     │CB C4     │ - │ - │  -  │ - │   8    │          │
+         │SET 0,L     │CB C5     │ - │ - │  -  │ - │   8    │          │
+         │SET 0,B     │CB C0     │ - │ - │  -  │ - │   8    │          │
+         │SET 0,C     │CB C1     │ - │ - │  -  │ - │   8    │          │
+         │SET 0,D     │CB C2     │ - │ - │  -  │ - │   8    │          │
+         │SET 0,E     │CB C3     │ - │ - │  -  │ - │   8    │          │
+         │SET (HL)    │CB C6     │ - │ - │  -  │ - │  15    │          │
+         │SET 0,(IX+S)│DD CB S C6│ - │ - │  -  │ - │  23    │          │
+         │SET 0,(IY+S)│FD CB S C6│ - │ - │  -  │ - │  23    │          │
+         │SET 1,A     │CB CF     │ - │ - │  -  │ - │   8    │          │
+         └────────────┴──────────┴───┴───┴─────┴───┴────────┴──────────┘
++                                  - 245 -
+
+                                              Продолжение таблицы 2.26.
+         ┌────────────┬──────────┬─────────────────┬────────┬──────────┐
+         │Мнемоника   │  Код     │Влияние на флаги │ Время  │Примечание│
+         │            │          ├───┬───┬─────┬───┤        ├──────────┤
+         │            │          │ C │ Z │ P/V │ S │(тактов)│          │
+         ├────────────┼──────────┼───┼───┼─────┼───┼────────┼──────────┤
+         │SET 1,H     │CB CC     │ - │ - │  -  │ - │   8    │          │
+         │SET 1,L     │CB CD     │ - │ - │  -  │ - │   8    │          │
+         │SET 1,B     │CB C8     │ - │ - │  -  │ - │   8    │          │
+         │SET 1,C     │CB C9     │ - │ - │  -  │ - │   8    │          │
+         │SET 1,D     │CB CA     │ - │ - │  -  │ - │   8    │          │
+         │SET 1,E     │CB CB     │ - │ - │  -  │ - │   8    │          │
+         │SET 1,(HL)  │CB CE     │ - │ - │  -  │ - │  15    │          │
+         │SET 1,(IX+S)│DD CB S CE│ - │ - │  -  │ - │  23    │          │
+         │SET 1,(IY+S)│FD CB S CE│ - │ - │  -  │ - │  23    │          │
+         │SET 2,A     │CB D7     │ - │ - │  -  │ - │   8    │          │
+         │SET 2,H     │CB D4     │ - │ - │  -  │ - │   8    │          │
+         │SET 2,L     │CB D5     │ - │ - │  -  │ - │   8    │          │
+         │SET 2,B     │CB D0     │ - │ - │  -  │ - │   8    │          │
+         │SET 2,C     │CB D1     │ - │ - │  -  │ - │   8    │          │
+         │SET 2,D     │CB D2     │ - │ - │  -  │ - │   8    │          │
+         │SET 2,E     │CB D3     │ - │ - │  -  │ - │   8    │          │
+         │SET 2,(HL)  │CB D6     │ - │ - │  -  │ - │  15    │          │
+         │SET 2,(IX+S)│DD CB S D6│ - │ - │  -  │ - │  23    │          │
+         │SET 2,(IY+S)│FD CB S D6│ - │ - │  -  │ - │  23    │          │
+         │SET 3,A     │CB DF     │ - │ - │  -  │ - │   8    │          │
+         │SET 3,H     │CB DC     │ - │ - │  -  │ - │   8    │          │
+         │SET 3,L     │CB DD     │ - │ - │  -  │ - │   8    │          │
+         │SET 3,B     │CB D8     │ - │ - │  -  │ - │   8    │          │
+         │SET 3,C     │CB D9     │ - │ - │  -  │ - │   8    │          │
+         │SET 3,D     │CB DA     │ - │ - │  -  │ - │   8    │          │
+         │SET 3,E     │CB DB     │ - │ - │  -  │ - │   8    │          │
+         │SET 3,(HL)  │CB DE     │ - │ - │  -  │ - │  15    │          │
+         │SET 3,(IX+S)│DD CB S DE│ - │ - │  -  │ - │  23    │          │
+         │SET 3,(IY+S)│FD CB S DE│ - │ - │  -  │ - │  23    │          │
+         │SET 4,A     │CB E7     │ - │ - │  -  │ - │   8    │          │
+         │SET 4,H     │CB E4     │ - │ - │  -  │ - │   8    │          │
+         │SET 4,L     │CB E5     │ - │ - │  -  │ - │   8    │          │
+         │SET 4,B     │CB E0     │ - │ - │  -  │ - │   8    │          │
+         │SET 4,C     │CB E1     │ - │ - │  -  │ - │   8    │          │
+         │SET 4,D     │CB E2     │ - │ - │  -  │ - │   8    │          │
+         │SET 4,E     │CB E3     │ - │ - │  -  │ - │   8    │          │
+         │SET 4,(HL)  │CB E6     │ - │ - │  -  │ - │  15    │          │
+         │SET 4,(IX+S)│DD CB S E6│ - │ - │  -  │ - │  23    │          │
+         │SET 4,(IY+S)│FD CB S E6│ - │ - │  -  │ - │  23    │          │
+         │SET 5,A     │CB EF     │ - │ - │  -  │ - │   8    │          │
+         │SET 5,H     │CB EC     │ - │ - │  -  │ - │   8    │          │
+         └────────────┴──────────┴───┴───┴─────┴───┴────────┴──────────┘
++                                  - 246 -
+
+                                              Продолжение таблицы 2.26.
+         ┌────────────┬──────────┬─────────────────┬────────┬──────────┐
+         │Мнемоника   │  Код     │Влияние на флаги │ Время  │Примечание│
+         │            │          ├───┬───┬─────┬───┤        ├──────────┤
+         │            │          │ C │ Z │ P/V │ S │(тактов)│          │
+         ├────────────┼──────────┼───┼───┼─────┼───┼────────┼──────────┤
+         │SET 5,L     │CB ED     │ - │ - │  -  │ - │   8    │          │
+         │SET 5,B     │CB E8     │ - │ - │  -  │ - │   8    │          │
+         │SET 5,C     │CB E9     │ - │ - │  -  │ - │   8    │          │
+         │SET 5,D     │CB EA     │ - │ - │  -  │ - │   8    │          │
+         │SET 5,E     │CB EB     │ - │ - │  -  │ - │   8    │          │
+         │SET 5,(HL)  │CB EE     │ - │ - │  -  │ - │  15    │          │
+         │SET 5,(IX+S)│DD CB S EE│ - │ - │  -  │ - │  23    │          │
+         │SET 5,(IY+S)│FD CB S EE│ - │ - │  -  │ - │  23    │          │
+         │SET 6,A     │CB F7     │ - │ - │  -  │ - │   8    │          │
+         │SET 6,H     │CB F4     │ - │ - │  -  │ - │   8    │          │
+         │SET 6,L     │CB F5     │ - │ - │  -  │ - │   8    │          │
+         │SET 6,B     │CB F0     │ - │ - │  -  │ - │   8    │          │
+         │SET 6,C     │CB F1     │ - │ - │  -  │ - │   8    │          │
+         │SET 6,D     │CB F2     │ - │ - │  -  │ - │   8    │          │
+         │SET 6,E     │CB F3     │ - │ - │  -  │ - │   8    │          │
+         │SET 6,(HL)  │CB F6     │ - │ - │  -  │ - │  15    │          │
+         │SET 6,(IX+S)│DD CB S F6│ - │ - │  -  │ - │  23    │          │
+         │SET 6,(IY+S)│FD CB S F6│ - │ - │  -  │ - │  23    │          │
+         │SET 7,A     │CB FF     │ - │ - │  -  │ - │   8    │          │
+         │SET 7,H     │CB FC     │ - │ - │  -  │ - │   8    │          │
+         │SET 7,L     │CB FD     │ - │ - │  -  │ - │   8    │          │
+         │SET 7,B     │CB F8     │ - │ - │  -  │ - │   8    │          │
+         │SET 7,C     │CB F9     │ - │ - │  -  │ - │   8    │          │
+         │SET 7,D     │CB FA     │ - │ - │  -  │ - │   8    │          │
+         │SET 7,E     │CB FB     │ - │ - │  -  │ - │   8    │          │
+         │SET 7,(HL)  │CB FE     │ - │ - │  -  │ - │  15    │          │
+         │SET 7,(IX+S)│DD CB S FE│ - │ - │  -  │ - │  23    │          │
+         │SET 7,(IY+S)│FD CB S FE│ - │ - │  -  │ - │  23    │          │
+         └────────────┴──────────┴───┴───┴─────┴───┴────────┴──────────┘
+
+         Команды выключения битов                         Таблица 2.27.
+         ┌────────────┬──────────┬─────────────────┬────────┬──────────┐
+         │Мнемоника   │  Код     │Влияние на флаги │ Время  │Примечание│
+         │            │          ├───┬───┬─────┬───┤        ├──────────┤
+         │            │          │ C │ Z │ P/V │ S │(тактов)│          │
+         ├────────────┼──────────┼───┼───┼─────┼───┼────────┼──────────┤
+         │RES 0,A     │CB 87     │ - │ - │  -  │ - │   8    │          │
+         │RES 0,H     │CB 84     │ - │ - │  -  │ - │   8    │          │
+         │RES 0,L     │CB 85     │ - │ - │  -  │ - │   8    │          │
+         │RES 0,B     │CB 80     │ - │ - │  -  │ - │   8    │          │
+         │RES 0,C     │CB 81     │ - │ - │  -  │ - │   8    │          │
+         └────────────┴──────────┴───┴───┴─────┴───┴────────┴──────────┘
++                                  - 247 -
+
+                                                Продолжение табл. 2.27
+         ┌────────────┬──────────┬─────────────────┬────────┬──────────┐
+         │Мнемоника   │  Код     │Влияние на флаги │ Время  │Примечание│
+         │            │          ├───┬───┬─────┬───┤        ├──────────┤
+         │            │          │ C │ Z │ P/V │ S │(тактов)│          │
+         ├────────────┼──────────┼───┼───┼─────┼───┼────────┼──────────┤
+         │RES 0,D     │CB 82     │ - │ - │  -  │ - │   8    │          │
+         │RES 0,E     │CB 83     │ - │ - │  -  │ - │   8    │          │
+         │RES 0,(HL)  │CB 86     │ - │ - │  -  │ - │  15    │          │
+         │RES 0,(IX+S)│DD CB S 86│ - │ - │  -  │ - │  23    │          │
+         │RES 0,(IY+S)│FD CB S 86│ - │ - │  -  │ - │  23    │          │
+         │RES 1,A     │CB 8F     │ - │ - │  -  │ - │   8    │          │
+         │RES 1,H     │CB 8C     │ - │ - │  -  │ - │   8    │          │
+         │RES 1,L     │CB 8D     │ - │ - │  -  │ - │   8    │          │
+         │RES 1,B     │CB 88     │ - │ - │  -  │ - │   8    │          │
+         │RES 1,C     │CB 89     │ - │ - │  -  │ - │   8    │          │
+         │RES 1,D     │CB 8A     │ - │ - │  -  │ - │   8    │          │
+         │RES 1,E     │CB 8B     │ - │ - │  -  │ - │   8    │          │
+         │RES 1,(HL)  │CB 8E     │ - │ - │  -  │ - │  15    │          │
+         │RES 1,(IX+S)│DD CB S 8E│ - │ - │  -  │ - │  23    │          │
+         │RES 1,(IY+S)│FD CB S 8E│ - │ - │  -  │ - │  23    │          │
+         │RES 2,A     │CB 97     │ - │ - │  -  │ - │   8    │          │
+         │RES 2,H     │CB 94     │ - │ - │  -  │ - │   8    │          │
+         │RES 2,L     │CB 95     │ - │ - │  -  │ - │   8    │          │
+         │RES 2,B     │CB 90     │ - │ - │  -  │ - │   8    │          │
+         │RES 2,C     │CB 91     │ - │ - │  -  │ - │   8    │          │
+         │RES 2,D     │CB 92     │ - │ - │  -  │ - │   8    │          │
+         │RES 2,E     │CB 93     │ - │ - │  -  │ - │   8    │          │
+         │RES 2,(HL)  │CB 96     │ - │ - │  -  │ - │  15    │          │
+         │RES 2,(IX+S)│DD CB S 96│ - │ - │  -  │ - │  23    │          │
+         │RES 2,(IY+S)│FD CB S 96│ - │ - │  -  │ - │  23    │          │
+         │RES 3,A     │CB 9F     │ - │ - │  -  │ - │   8    │          │
+         │RES 3,H     │CB 9C     │ - │ - │  -  │ - │   8    │          │
+         │RES 3,L     │CB 9D     │ - │ - │  -  │ - │   8    │          │
+         │RES 3,B     │CB 98     │ - │ - │  -  │ - │   8    │          │
+         │RES 3,C     │CB 99     │ - │ - │  -  │ - │   8    │          │
+         │RES 3,D     │CB 9A     │ - │ - │  -  │ - │   8    │          │
+         │RES 3,E     │CB 9B     │ - │ - │  -  │ - │   8    │          │
+         │RES 3,(HL)  │CB 9E     │ - │ - │  -  │ - │  15    │          │
+         │RES 3,(IX+S)│DD CB S 9E│ - │ - │  -  │ - │  23    │          │
+         │RES 3,(IY+S)│FD CB S 9E│ - │ - │  -  │ - │  23    │          │
+         │RES 4,A     │CB A7     │ - │ - │  -  │ - │   8    │          │
+         │RES 4,H     │CB A4     │ - │ - │  -  │ - │   8    │          │
+         │RES 4,L     │CB A5     │ - │ - │  -  │ - │   8    │          │
+         │RES 4,B     │CB A0     │ - │ - │  -  │ - │   8    │          │
+         │RES 4,C     │CB A1     │ - │ - │  -  │ - │   8    │          │
+         │RES 4,D     │CB A2     │ - │ - │  -  │ - │   8    │          │
+         └────────────┴──────────┴───┴───┴─────┴───┴────────┴──────────┘
++                                  - 248 -
+
+                                                Продолжение табл. 2.27
+         ┌────────────┬──────────┬─────────────────┬────────┬──────────┐
+         │Мнемоника   │  Код     │Влияние на флаги │ Время  │Примечание│
+         │            │          ├───┬───┬─────┬───┤        ├──────────┤
+         │            │          │ C │ Z │ P/V │ S │(тактов)│          │
+         ├────────────┼──────────┼───┼───┼─────┼───┼────────┼──────────┤
+         │RES 4,E     │CB A3     │ - │ - │  -  │ - │   8    │          │
+         │RES 4,(HL)  │CB A6     │ - │ - │  -  │ - │  15    │          │
+         │RES 4,(IX+S)│DD CB S A6│ - │ - │  -  │ - │  23    │          │
+         │RES 4,(IY+S)│FD CB S A6│ - │ - │  -  │ - │  23    │          │
+         │RES 5,A     │CB AF     │ - │ - │  -  │ - │   8    │          │
+         │RES 5,H     │CB AC     │ - │ - │  -  │ - │   8    │          │
+         │RES 5,L     │CB AD     │ - │ - │  -  │ - │   8    │          │
+         │RES 5,B     │CB A8     │ - │ - │  -  │ - │   8    │          │
+         │RES 5,C     │CB A9     │ - │ - │  -  │ - │   8    │          │
+         │RES 5,D     │CB AA     │ - │ - │  -  │ - │   8    │          │
+         │RES 5,E     │CB AB     │ - │ - │  -  │ - │   8    │          │
+         │RES 5,(HL)  │CB AE     │ - │ - │  -  │ - │  15    │          │
+         │RES 5,(IX+S)│DD CB S AE│ - │ - │  -  │ - │  23    │          │
+         │RES 5,(IY+S)│FD CB S AE│ - │ - │  -  │ - │  23    │          │
+         │RES 6,A     │CB B7     │ - │ - │  -  │ - │   8    │          │
+         │RES 6,H     │CB B4     │ - │ - │  -  │ - │   8    │          │
+         │RES 6,L     │CB B5     │ - │ - │  -  │ - │   8    │          │
+         │RES 6,B     │CB B0     │ - │ - │  -  │ - │   8    │          │
+         │RES 6,C     │CB B1     │ - │ - │  -  │ - │   8    │          │
+         │RES 6,D     │CB B2     │ - │ - │  -  │ - │   8    │          │
+         │RES 6,E     │CB B3     │ - │ - │  -  │ - │   8    │          │
+         │RES 6,(HL)  │CB B6     │ - │ - │  -  │ - │  15    │          │
+         │RES 6,(IX+S)│DD CB S B6│ - │ - │  -  │ - │  23    │          │
+         │RES 6,(IY+S)│FD CB S B6│ - │ - │  -  │ - │  23    │          │
+         │RES 7,A     │CB BF     │ - │ - │  -  │ - │   8    │          │
+         │RES 7,H     │CB BC     │ - │ - │  -  │ - │   8    │          │
+         │RES 7,L     │CB BD     │ - │ - │  -  │ - │   8    │          │
+         │RES 7,B     │CB B8     │ - │ - │  -  │ - │   8    │          │
+         │RES 7,C     │CB B9     │ - │ - │  -  │ - │   8    │          │
+         │RES 7,D     │CB BA     │ - │ - │  -  │ - │   8    │          │
+         │RES 7,E     │CB BB     │ - │ - │  -  │ - │   8    │          │
+         │RES 7,(HL)  │CB BE     │ - │ - │  -  │ - │  15    │          │
+         │RES 7,(IX+S)│DD CB S BE│ - │ - │  -  │ - │  23    │          │
+         │RES 7,(IY+S)│FD CB S BE│ - │ - │  -  │ - │  23    │          │
+         └────────────┴──────────┴───┴───┴─────┴───┴────────┴──────────┘
+
+
+
+
+
+
+
++                                  - 249 -
+
+         Команды проверки битов.                          Таблица 2.28.
+         ┌────────────┬──────────┬─────────────────┬────────┬──────────┐
+         │Мнемоника   │  Код     │Влияние на флаги │ Время  │Примечание│
+         │            │          ├───┬───┬─────┬───┤        ├──────────┤
+         │            │          │ C │ Z │ P/V │ S │(тактов)│          │
+         ├────────────┼──────────┼───┼───┼─────┼───┼────────┼──────────┤
+         │BIT 0,A     │CB 47     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 0,H     │CB 44     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 0,L     │CB 45     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 0,B     │CB 40     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 0,C     │CB 41     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 0,D     │CB 42     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 0,E     │CB 43     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 0,(HL)  │CB 46     │ - │ * │  ?  │ ? │  12    │          │
+         │BIT 0,(IX+S)│DD CB S 46│ - │ * │  ?  │ ? │  20    │          │
+         │BIT 0,(IY+S)│FD CB S 46│ - │ * │  ?  │ ? │  23    │          │
+         │BIT 1,A     │CB 4F     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 1,H     │CB 4C     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 1,L     │CB 4D     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 1,B     │CB 48     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 1,C     │CB 49     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 1,D     │CB 4A     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 1,E     │CB 4B     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 1,(HL)  │CB 4E     │ - │ * │  ?  │ ? │  12    │          │
+         │BIT 1,(IX+S)│DD CB S 4E│ - │ * │  ?  │ ? │  20    │          │
+         │BIT 1,(IY+S)│FD CB S 4E│ - │ * │  ?  │ ? │  23    │          │
+         │BIT 2,A     │CB 57     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 2,H     │CB 54     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 2,L     │CB 55     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 2,B     │CB 50     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 2,C     │CB 51     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 2,D     │CB 52     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 2,E     │CB 53     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 2,(HL)  │CB 56     │ - │ * │  ?  │ ? │  12    │          │
+         │BIT 2,(IX+S)│DD CB S 56│ - │ * │  ?  │ ? │  20    │          │
+         │BIT 2,(IY+S)│FD CB S 56│ - │ * │  ?  │ ? │  23    │          │
+         │BIT 3,A     │CB 5F     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 3,H     │CB 5C     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 3,L     │CB 5D     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 3,B     │CB 58     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 3,C     │CB 59     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 3,D     │CB 5A     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 3,E     │CB 5B     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 3,(HL)  │CB 5E     │ - │ * │  ?  │ ? │  12    │          │
+         │BIT 3,(IX+S)│DD CB S 5E│ - │ * │  ?  │ ? │  20    │          │
+         │BIT 3,(IY+S)│FD CB S 5E│ - │ * │  ?  │ ? │  23    │          │
+         │BIT 4,A     │CB 67     │ - │ * │  ?  │ ? │   8    │          │
+         └────────────┴──────────┴───┴───┴─────┴───┴────────┴──────────┘
++                                  - 250 -
+
+                                             Продолжение таблицы 2.28.
+         ┌────────────┬──────────┬─────────────────┬────────┬──────────┐
+         │Мнемоника   │  Код     │Влияние на флаги │ Время  │Примечание│
+         │            │          ├───┬───┬─────┬───┤        ├──────────┤
+         │            │          │ C │ Z │ P/V │ S │(тактов)│          │
+         ├────────────┼──────────┼───┼───┼─────┼───┼────────┼──────────┤
+         │BIT 4,H     │CB 64     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 4,L     │CB 65     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 4,B     │CB 60     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 4,C     │CB 61     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 4,D     │CB 62     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 4,E     │CB 63     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 4,(HL)  │CB 66     │ - │ * │  ?  │ ? │  12    │          │
+         │BIT 4,(IX+S)│DD CB S 66│ - │ * │  ?  │ ? │  20    │          │
+         │BIT 4,(IY+S)│FD CB S 66│ - │ * │  ?  │ ? │  23    │          │
+         │BIT 5,A     │CB 6F     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 5,H     │CB 6C     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 5,L     │CB 6D     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 5,B     │CB 68     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 5,C     │CB 69     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 5,D     │CB 6A     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 5,E     │CB 6B     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 5,(HL)  │CB 6E     │ - │ * │  ?  │ ? │  12    │          │
+         │BIT 5,(IX+S)│DD CB S 6E│ - │ * │  ?  │ ? │  20    │          │
+         │BIT 5,(IY+S)│FD CB S 6E│ - │ * │  ?  │ ? │  23    │          │
+         │BIT 6,A     │CB 77     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 6,H     │CB 74     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 6,L     │CB 75     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 6,B     │CB 70     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 6,C     │CB 71     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 6,D     │CB 72     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 6,E     │CB 73     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 6,(HL)  │CB 76     │ - │ * │  ?  │ ? │  12    │          │
+         │BIT 6,(IX+S)│DD CB S 76│ - │ * │  ?  │ ? │  20    │          │
+         │BIT 6,(IY+S)│FD CB S 76│ - │ * │  ?  │ ? │  23    │          │
+         │BIT 7,A     │CB 7F     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 7,H     │CB 7C     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 7,L     │CB 7D     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 7,B     │CB 78     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 7,C     │CB 79     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 7,D     │CB 7A     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 7,E     │CB 7B     │ - │ * │  ?  │ ? │   8    │          │
+         │BIT 7,(HL)  │CB 7E     │ - │ * │  ?  │ ? │  12    │          │
+         │BIT 7,(IX+S)│DD CB S 7E│ - │ * │  ?  │ ? │  20    │          │
+         │BIT 7,(IY+S)│FD CB S 7E│ - │ * │  ?  │ ? │  23    │          │
+         └────────────┴──────────┴───┴───┴─────┴───┴────────┴──────────┘
+
+
++                                  - 251 -
+
+          Команды перемещения блоков.                   Таблица 2.29
+         ┌──────────┬───────┬─────────────────┬────────┬───────────────┐
+         │Мнемоника │  Код  │Влияние на флаги │ Время  │  Примечание   │
+         │          │       ├───┬───┬─────┬───┤        │               │
+         │          │       │ C │ Z │ P/V │ S │(тактов)│               │
+         ├──────────┼───────┼───┼───┼─────┼───┼────────┼───────────────┤
+         │LDIR      │ED B0  │ - │ - │  O  │ - │  21    │  BC<>0        │
+         │          │       │   │   │     │   │  16    │  BC=0         │
+         │LDDR      │ED B8  │ - │ - │  O  │ - │  21    │  BC<>0        │
+         │          │       │   │   │     │   │  16    │  BC=0         │
+         │LDI       │ED A0  │ - │ - │  *  │ - │  16    │P/V=0,если BC=0│
+         │          │       │   │   │     │   │        │иначе 1        │
+         │LDD       │ED A8  │ - │ - │  *  │ - │  16    │P/V=0,если BC=0│
+         │          │       │   │   │     │   │        │иначе 1        │
+         └──────────┴───────┴───┴───┴─────┴───┴────────┴───────────────┘
+
+
+          Команды блочного поиска.                      Таблица 2.30.
+         ┌──────────┬───────┬─────────────────┬────────┬───────────────┐
+         │Мнемоника │  Код  │Влияние на флаги │ Время  │  Примечание   │
+         │          │       ├───┬───┬─────┬───┤        │               │
+         │          │       │ C │ Z │ P/V │ S │(тактов)│               │
+         ├──────────┼───────┼───┼───┼─────┼───┼────────┼───────────────┤
+         │CPIR      │ED B1  │ - │ * │  *  │ * │  21    │если BC<>0 и   │
+         │          │       │   │   │     │   │        │A<>(HL)        │
+         │          │       │   │   │     │   │  16    │если BC=0 или  │
+         │          │       │   │   │     │   │        │A=(HL)         │
+         │          │       │   │   │     │   │        │P/V=0,если BC=0│
+         │          │       │   │   │     │   │        │иначе 1        │
+         │          │       │   │   │     │   │        │Z=1,если A=(HL)│
+         │          │       │   │   │     │   │        │иначе 0        │
+         │CPDR      │ED B9  │ - │ * │  *  │ * │  21    │если BC<>0 и   │
+         │          │       │   │   │     │   │        │A<>(HL)        │
+         │          │       │   │   │     │   │  16    │если BC=0 или  │
+         │          │       │   │   │     │   │        │A=(HL)         │
+         │          │       │   │   │     │   │        │P/V=0,если BC=0│
+         │          │       │   │   │     │   │        │иначе 1        │
+         │          │       │   │   │     │   │        │Z=1,если A=(HL)│
+         │          │       │   │   │     │   │        │иначе 0        │
+         │CPI       │ED A1  │ - │ * │  *  │ * │  16    │P/V=0,если BC=0│
+         │          │       │   │   │     │   │        │иначе 1        │
+         │          │       │   │   │     │   │        │Z=1,если A=(HL)│
+         │          │       │   │   │     │   │        │иначе 0        │
+         │CPD       │ED A9  │ - │ * │  *  │ * │  16    │P/V=0,если BC=0│
+         │          │       │   │   │     │   │        │иначе 1        │
+         │          │       │   │   │     │   │        │Z=1,если A=(HL)│
+         │          │       │   │   │     │   │        │иначе 0        │
+         └──────────┴───────┴───┴───┴─────┴───┴────────┴───────────────┘
++                                  - 252 -
+
+
+         Команды ввода от внешних устройств.              Таблица 2.31.
+         ┌──────────┬───────┬─────────────────┬────────┬───────────────┐
+         │Мнемоника │  Код  │Влияние на флаги │ Время  │  Примечание   │
+         │          │       ├───┬───┬─────┬───┤        │               │
+         │          │       │ C │ Z │ P/V │ S │(тактов)│               │
+         ├──────────┼───────┼───┼───┼─────┼───┼────────┼───────────────┤
+         │IN A,(N)  │DB N   │ - │ - │  -  │ - │  11    │N - A0...A7    │
+         │          │       │   │   │     │   │        │рег.A -A8...A15│
+         │IN A,(C)  │ED 78  │ - │ * │  P  │ * │  12    │C - A0...A7    │
+         │          │       │   │   │     │   │        │B - A7...A15   │
+         │IN H,(C)  │ED 60  │ - │ * │  P  │ * │  12    │---"---"---"---│
+         │IN L,(C)  │ED 68  │ - │ * │  P  │ * │  12    │---"---"---"---│
+         │IN B,(C)  │ED 40  │ - │ * │  P  │ * │  12    │---"---"---"---│
+         │IN C,(C)  │ED 48  │ - │ * │  P  │ * │  12    │---"---"---"---│
+         │IN D,(C)  │ED 50  │ - │ * │  P  │ * │  12    │---"---"---"---│
+         │IN E,(C)  │ED 58  │ - │ * │  P  │ * │  12    │---"---"---"---│
+         │IN F,(C)  │ED 70  │ * │ * │  *  │ * │  12    │---"---"---"---│
+         │INIR      │ED B2  │ ? │ 1 │  ?  │ ? │  21    │B <> 0         │
+         │          │       │   │   │     │   │  16    │B = 0          │
+         │          │       │   │   │     │   │        │C - A0...A7    │
+         │          │       │   │   │     │   │        │B - A7...A15   │
+         │INDR      │ED BA  │ ? │ 1 │  ?  │ ? │  21    │B <> 0         │
+         │          │       │   │   │     │   │  16    │B = 0          │
+         │          │       │   │   │     │   │        │C - A0...A7    │
+         │          │       │   │   │     │   │        │B - A7...A15   │
+         │INI       │ED A2  │ ? │ * │  ?  │ ? │  16    │C - A0...A7    │
+         │          │       │   │   │     │   │        │B - A7...A15   │
+         │          │       │   │   │     │   │        │Z=1 если B=1,  │
+         │          │       │   │   │     │   │        │иначе  0       │
+         │IND       │ED AA  │ ? │ * │  ?  │ ? │  16    │C - A0...A7    │
+         │          │       │   │   │     │   │        │B - A7...A15   │
+         │          │       │   │   │     │   │        │Z=1 если B=1,  │
+         │          │       │   │   │     │   │        │иначе  0       │
+         └──────────┴───────┴───┴───┴─────┴───┴────────┴───────────────┘
+
+
+         Команды вывода на внешние устройства.             Таблица 2.32
+         ┌──────────┬───────┬─────────────────┬────────┬───────────────┐
+         │Мнемоника │  Код  │Влияние на флаги │ Время  │  Примечание   │
+         │          │       ├───┬───┬─────┬───┤        │               │
+         │          │       │ C │ Z │ P/V │ S │(тактов)│               │
+         ├──────────┼───────┼───┼───┼─────┼───┼────────┼───────────────┤
+         │OUT (N),A │D3 N   │ - │ - │  -  │ - │  11    │N - A0...A7    │
+         │          │       │   │   │     │   │        │рег.A -A8...A15│
+         │OUT (C),A │ED 79  │ - │ * │  P  │ * │  12    │               │
+         │          │       │   │   │     │   │        │B - A7...A15   │
+         └──────────┴───────┴───┴───┴─────┴───┴────────┴───────────────┘
++                                  - 253 -
+
+                                              Продолжение таблицы 2.32.
+         ┌──────────┬───────┬─────────────────┬────────┬───────────────┐
+         │Мнемоника │  Код  │Влияние на флаги │ Время  │  Примечание   │
+         │          │       ├───┬───┬─────┬───┤        │               │
+         │          │       │ C │ Z │ P/V │ S │(тактов)│               │
+         ├──────────┼───────┼───┼───┼─────┼───┼────────┼───────────────┤
+         │OUT (C),H │ED 61  │ - │ * │  P  │ * │  12    │C - A0...A7    │
+         │          │       │   │   │     │   │        │B - A7...A15   │
+         │OUT (C).L │ED 69  │ - │ * │  P  │ * │  12    │---"---"---"---│
+         │OUT (C),B │ED 41  │ - │ * │  P  │ * │  12    │---"---"---"---│
+         │OUT (C),C │ED 49  │ - │ * │  P  │ * │  12    │---"---"---"---│
+         │OUT (C),D │ED 51  │ - │ * │  P  │ * │  12    │---"---"---"---│
+         │OUT (C),E │ED 59  │ - │ * │  P  │ * │  12    │---"---"---"---│
+         │OTIR      │ED B3  │ ? │ 1 │  ?  │ ? │  21    │B <> 0         │
+         │          │       │   │   │     │   │  16    │B = 0          │
+         │          │       │   │   │     │   │        │C - A0...A7    │
+         │          │       │   │   │     │   │        │B - A7...A15   │
+         │OTDR      │ED BB  │ ? │ 1 │  ?  │ ? │  21    │B <> 0         │
+         │          │       │   │   │     │   │  16    │B = 0          │
+         │          │       │   │   │     │   │        │C - A0...A7    │
+         │          │       │   │   │     │   │        │B - A7...A15   │
+         │OUTI      │ED A3  │ ? │ * │  ?  │ ? │  16    │C - A0...A7    │
+         │          │       │   │   │     │   │        │B - A7...A15   │
+         │          │       │   │   │     │   │        │Z=1 если B=1,  │
+         │          │       │   │   │     │   │        │иначе  0       │
+         │OUTD      │ED AB  │ ? │ * │  ?  │ ? │  16    │C - A0...A7    │
+         │          │       │   │   │     │   │        │B - A7...A15   │
+         │          │       │   │   │     │   │        │Z=1 если B=1,  │
+         │          │       │   │   │     │   │        │иначе  0       │
+         └──────────┴───────┴───┴───┴─────┴───┴────────┴───────────────┘
+
+
+         Команды обработки прерываний.                     Таблица 2.33
+         ┌──────────┬───────┬─────────────────┬────────┬───────────────┐
+         │Мнемоника │  Код  │Влияние на флаги │ Время  │  Примечание   │
+         │          │       ├───┬───┬─────┬───┤        │               │
+         │          │       │ C │ Z │ P/V │ S │(тактов)│               │
+         ├──────────┼───────┼───┼───┼─────┼───┼────────┼───────────────┤
+         │EI        │FB     │ - │ - │  -  │ - │   4    │               │
+         │DI        │F3     │ - │ - │  -  │ - │   4    │               │
+         │IM 0      │ED 46  │ - │ - │  -  │ - │   8    │               │
+         │IM 1      │ED 56  │ - │ - │  -  │ - │   8    │               │
+         │IM 2      │ED 5E  │ - │ - │  -  │ - │   8    │               │
+         │RET I     │ED 4D  │ - │ - │  -  │ - │  14    │               │
+         │RET N     │ED 45  │ - │ - │  -  │ - │  14    │               │
+         └──────────┴───────┴───┴───┴─────┴───┴────────┴───────────────┘
+
+
++                                  - 254 -
+
+         Прочие команды.                                  Таблица 2.34.
+         ┌──────────┬───────┬─────────────────┬────────┬───────────────┐
+         │Мнемоника │  Код  │Влияние на флаги │ Время  │  Примечание   │
+         │          │       ├───┬───┬─────┬───┤        │               │
+         │          │       │ C │ Z │ P/V │ S │(тактов)│               │
+         ├──────────┼───────┼───┼───┼─────┼───┼────────┼───────────────┤
+         │NOP       │00     │ - │ - │  -  │ - │   4    │               │
+         │CPL       │2F     │ - │ - │  -  │ - │   4    │               │
+         │NEG       │ED 44  │ * │ * │  V  │ * │   8    │               │
+         │SCF       │37     │ 1 │ - │  -  │ - │   4    │               │
+         │CCF       │3F     │ * │ - │  -  │ - │   4    │               │
+         │HALT      │76     │ 1 │ - │  -  │ - │   4    │               │
+         │DAA       │27     │ * │ * │  P  │ * │   4    │Влияет также на│
+         │          │       │   │   │     │   │        │флаг H (полупе-│
+         │          │       │   │   │     │   │        │реноса).       │
+         └──────────┴───────┴───┴───┴─────┴───┴────────┴───────────────┘
+
+
+                         3.  CИСТЕМА КОМАНД КАЛЬКУЛЯТОРА
+
+                                                       Таблица 3.
+         ┌────┬─────────┬─────────────┬─────────┬──────────────────────┐
+         │    │         │             │         │                      │
+         │Код │ Команда │Содержимое   │Нарушение│ Назначение команды   │
+         │    │         │вершины стека│регистров│                      │
+         │    │         ├──────┬──────┤         │                      │
+         │    │         │  до  │ после│         │                      │
+         ├────┼─────────┼──────┼──────┼─────────┼──────────────────────┤
+         │    │         │      │      │         │                      │
+         │00 s│jump true│  x   │   -  │    -    │Выполняется относи-   │
+         │    │         │      │      │         │тельный переход на s  │
+         │    │         │      │      │         │шагов, если x имеет   │
+         │    │         │      │      │         │значение TRUE.        │
+         │01  │exchange │ x,y  │ y,x  │    -    │Меняются местами два  │
+         │    │         │      │      │         │числа на вершине стека│
+         │02  │delete   │  x   │   -  │    -    │Верхнее число удаляет-│
+         │    │         │      │      │         │ся со стека           │
+         │03  │subtract │ x,y  │ x-y  │    -    │Вычитание             │
+         │04  │multiply │ x,y  │ x*y  │    -    │Умножение             │
+         │05  │divide   │ x,y  │ x/y  │    -    │Деление               │
+         │06  │power    │ x,y  │ x^y  │B,M0...M3│Возведение в степень  │
+         │07  │or       │ x,y  │ TRUE │    -    │Логическое "ИЛИ"      │
+         │    │         │      │ или  │         │                      │
+         │    │         │      │FALSE │         │                      │
+         │08  │n and    │ x,y  │TRUE/ │    -    │Логическое "И" для    │
+         │    │         │      │FALSE │         │чисел                 │
+         └────┴─────────┴──────┴──────┴─────────┴──────────────────────┘
+
+                                   - 255 -
+
+                                              Продолжение таблицы 3.
+         ┌────┬────────┬──────────────┬─────────┬──────────────────────┐
+         │    │        │              │         │                      │
+         │Код │ Команда│Содержимое    │Нарушение│ Назначение команды   │
+         │    │        │вершины стека │регистров│                      │
+         │    │        ├─────┬────────┤         │                      │
+         │    │        │  до │ после  │         │                      │
+         ├────┼────────┼─────┼────────┼─────────┼──────────────────────┤
+         │07  │or      │ x,y │ TRUE   │    -    │Логическое "ИЛИ"      │
+         │    │        │     │ или    │         │                      │
+         │    │        │     │FALSE   │         │                      │
+         │08  │n and   │ x,y │TRUE/   │    -    │Логическое "И" для    │
+         │    │        │     │FALSE   │         │чисел                 │
+         │09  │n le    │ x,y │TRUE/   │    -    │"МЕНЬШЕ ИЛИ РАВНО"    │
+         │    │        │     │FALSE   │         │В рег-ре В д.б.09     │
+         │0A  │n ge    │ x,y │TRUE/   │    -    │"БОЛЬШЕ ИЛИ РАВНО"    │
+         │    │        │     │FALSE   │         │В рег-ре В д.б.0A     │
+         │0B  │n ne    │ x,y │TRUE/   │    -    │"НЕ РАВНО"            │
+         │    │        │     │FALSE   │         │В рег-ре В д.б.0B     │
+         │0C  │n gt    │ x,y │TRUE/   │    -    │"БОЛЬШЕ"              │
+         │    │        │     │FALSE   │         │В рег-ре В д.б.0C     │
+         │0D  │n lt    │ x,y │TRUE/   │    -    │"МЕНЬШЕ"              │
+         │    │        │     │FALSE   │         │В рег-ре В д.б.0D     │
+         │0E  │n eq    │ x,y │TRUE/   │    -    │"РАВНО"               │
+         │    │        │     │FALSE   │         │В рег-ре В д.б.0E     │
+         │0F  │add     │x,y  │ x+y    │    -    │Сложение (для чисел)  │
+         │10  │s and   │x$,y │TRUE/   │    -    │Логическое "И" для    │
+         │    │        │     │FALSE   │         │стринга и числа       │
+         │11  │s le    │x$,y$│TRUE/   │    -    │"МЕНЬШЕ ИЛИ РАВНО"    │
+         │    │        │     │FALSE   │         │В регистре В д.б.11   │
+         │12  │s ge    │x$,y$│TRUE/   │    -    │"БОЛЬШЕ ИЛИ РАВНО"    │
+         │    │        │     │FALSE   │         │В регистре В д.б.12   │
+         │13  │s ne    │x$,y$│TRUE/   │    -    │"НЕ РАВНО"            │
+         │    │        │     │FALSE   │         │В регистре В д.б.13   │
+         │14  │s gt    │x$,y$│TRUE/   │    -    │"БОЛЬШЕ"              │
+         │    │        │     │FALSE   │         │В рег-ре В д.б.14     │
+         │15  │s lt    │x$,y$│TRUE/   │    -    │"МЕНЬШЕ"              │
+         │    │        │     │FALSE   │         │В рег-ре В д.б.15     │
+         │16  │s eq    │x$,y$│TRUE/   │    -    │"РАВНО"               │
+         │    │        │     │FALSE   │         │В рег-ре В д.б.16     │
+         │17  │s add   │x$,y$│x$+y$   │    -    │Слияние стрингов      │
+         │18  │val$    │ x$  │val$ x$ │    -    │Расчет x$ без ограни- │
+         │    │        │     │        │         │чительных кавычек как │
+         │    │        │     │        │         │стрингового выражения.│
+         │    │        │     │        │         │в рег-ре В д.б.18     │
+         │19  │usr s   │ x$  │usr x$  │    -    │Определение адреса    │
+         └────┴────────┴─────┴────────┴─────────┴──────────────────────┘
+
++                                  - 256 -
+
+                                              Продолжение таблицы 3.
+         ┌────┬────────┬──────────────┬─────────┬──────────────────────┐
+         │    │        │              │         │                      │
+         │Код │ Команда│Содержимое    │Нарушение│ Назначение команды   │
+         │    │        │вершины стека │регистров│                      │
+         │    │        ├─────┬────────┤         │                      │
+         │    │        │  до │ после  │         │                      │
+         ├────┼────────┼─────┼────────┼─────────┼──────────────────────┤
+         │    │        │     │        │         │символа графики поль- │
+         │    │        │     │        │         │зователя, установлен- │
+         │    │        │     │        │         │ного для клавиши с    │
+         │    │        │     │        │         │символом x$.          │
+         │1A  │read in │ x   │inkey$#x│    -    │Определение символа,  │
+         │    │        │     │        │         │поступающего от канала│
+         │    │        │     │        │         │подключенного к потоку│
+         │    │        │     │        │         │x.                    │
+         │1B  │negate  │ x   │ -x     │    -    │Изменение знака на    │
+         │    │        │     │        │         │противоположный       │
+         │1С  │code    │x$   │code x$ │    -    │Определение кода      │
+         │    │        │     │        │         │символа.              │
+         │1D  │val     │x$   │val x$  │    -    │Расчет x$ без ограни- │
+         │    │        │     │        │         │чительных кавычек как │
+         │    │        │     │        │         │числового выражения.  │
+         │    │        │     │        │         │В регистре B д.б.1D   │
+         │1E  │len     │x$   │len x$  │    -    │Определение длины     │
+         │    │        │     │        │         │стринга.              │
+         │1F  │sin     │ x   │sin x   │B,M0...M2│Вычисление синуса     │
+         │20  │cos     │ x   │cos x   │B,M0...M2│Вычисление косинуса   │
+         │21  │tan     │ x   │tan x   │B,M0...M2│Вычисление тангенса   │
+         │22  │asn     │ x   │asn x   │B,M0...M2│Вычисление тангенса   │
+         │23  │acs     │ x   │acs x   │B,M0...M2│Вычисление арккосинуса│
+         │24  │atn     │ x   │atn x   │B,M0...M2│Вычисление арктангенса│
+         │25  │ln      │ x   │ln x    │B,M0...M2│Вычисление натурально-│
+         │    │        │     │        │         │го логарифма          │
+         │26  │exp     │ x   │exp x   │B,M0...M3│Вычисление e в степени│
+         │    │        │     │        │         │x. Здесь e - основание│
+         │    │        │     │        │         │натуральных логарифмов│
+         │27  │int     │ x   │int(x)  │M0       │Преобразование дейст- │
+         │    │        │     │        │         │вительного числа в    │
+         │    │        │     │        │         │целое. Округление вы- │
+         │    │        │     │        │         │полняется вниз.       │
+         │28  │sqr     │ x   │sqr(x)  │B,M0...M3│Вычисление корня квад-│
+         │    │        │     │        │         │ратного               │
+         └────┴────────┴─────┴────────┴─────────┴──────────────────────┘
+
+
+
+
++                                  - 257 -
+
+                                             Продолжение таблицы 3.
+         ┌───┬───────────┬─────────────┬─────────┬─────────────────────┐
+         │   │           │             │         │                     │
+         │Код│ Команда   │Содержимое   │Нарушение│ Назначение команды  │
+         │   │           │вершины стека│регистров│                     │
+         │   │           ├─────┬───────┤         │                     │
+         │   │           │ до  │ после │         │                     │
+         ├───┼───────────┼─────┼───────┼─────────┼─────────────────────┤
+         │8 n│series n   │  x  │ Pn(x) │B,M0...N2│Вычисление многочлена│
+         │   │           │     │       │         │Чебышева n-го порядка│
+         │   │           │     │       │         │(Применяется при рас-│
+         │   │           │     │       │         │четах алгебраических │
+         │   │           │     │       │         │и тригонометрических │
+         │   │           │     │       │         │функций)             │
+         │9 n│series n+10│  x  │P   (x)│B,M0...M2│То же                │
+         │   │           │     │ n-10  │         │                     │
+         │A0 │const zero │  -  │   0   │    -    │Помещает на стек 0   │
+         │A1 │const one  │  -  │   1   │    -    │Помещает на стек 1   │
+         │A2 │const half │  -  │  1/2  │    -    │Помещает на стек 0.5 │
+         │A3 │const pi/2 │  -  │1.57079│    -    │Помещает на стек одну│
+         │   │           │     │       │         │вторую числа Пи      │
+         │A4 │const ten  │  -  │  10   │    -    │Помещает на стек 10  │
+         │Cn │store Mn   │  x  │   x   │    -    │Копирование числа с  │
+         │   │           │     │       │         │вершины стека в n-ую │
+         │   │           │     │       │         │ячейку памяти кальку-│
+         │   │           │     │       │         │лятора. Нормально    │
+         │   │           │     │       │         │n=0...5, но можно ус-│
+         │   │           │     │       │         │тановить n от 6 до 1F│
+         │   │           │     │       │         │путем изменения со-  │
+         │   │           │     │       │         │держимого системной  │
+         │   │           │     │       │         │переменной MEM.      │
+         │Dn │Store      │  x  │   x   │    -    │То же, но n=10...1F  │
+         │   │    M(n+10)│     │       │         │                     │
+         │En │recall Mn  │  -  │  Mn   │    -    │Вызов на стек данных │
+         │   │           │     │       │         │из ячеек памяти      │
+         │Fn │recall     │  -  │M(n+10)│    -    │То же                │
+         │   │    M(n+10)│     │       │         │                     │
+         │29 │sgn        │  x  │ sgn(x)│    -    │Определение знака    │
+         │2A │abs        │  x  │ abs(x)│    -    │Определение абсолют- │
+         │   │           │     │       │         │ной величины числа   │
+         │2B │peek       │  x  │peek(x)│    -    │Определение содержи- │
+         │   │           │     │       │         │мого памяти по адресу│
+         │2С │in         │  x  │in x   │    -    │Ввод числа с внешнего│
+         │   │           │     │       │         │порта x              │
+         │2D │usr n      │  x  │usr x  │    ?    │Вычисление процедуры,│
+         │   │           │     │       │         │записанной в машинных│
+         │   │           │     │       │         │кодах                │
+         └───┴───────────┴─────┴───────┴─────────┴─────────────────────┘
+                                  - 258 -
+                                             Продолжение таблицы 3.
+         ┌────┬─────────┬──────────────┬─────────┬─────────────────────┐
+         │    │         │              │         │                     │
+         │Код │ Команда │Содержимое    │Нарушение│ Назначение команды  │
+         │    │         │вершины стека │регистров│                     │
+         │    │         ├────┬─────────┤         │                     │
+         │    │         │ до │ после   │         │                     │
+         ├────┼─────────┼────┼─────────┼─────────┼─────────────────────┤
+         │2E  │str$     │  x │str$ x   │M0...M5  │Преобразование числа │
+         │    │         │    │         │         │в соответствующий    │
+         │    │         │    │         │         │стринг. В системной  │
+         │    │         │    │         │         │переменной МЕМ должен│
+         │    │         │    │         │         │храниться адрес      │
+         │    │         │    │         │         │MEMBOT               │
+         │2F  │chr$     │  x │chr$ x   │    -    │Определение символа  │
+         │    │         │    │         │         │числа по его коду    │
+         │30  │not      │  x │T или F  │    -    │Условие "НЕ"         │
+         │31  │duplicate│  x │ x,x     │    -    │Повторение числа на  │
+         │    │         │    │         │         │вершине стека        │
+         │32  │mod,div  │x,y │ x-y*    │   M0    │Выделение остатка от │
+         │    │         │    │int(x/y),│         │деления двух чисел и │
+         │    │         │    │int(x/y) │         │целого частного      │
+         │33 s│jump     │  - │   -     │    -    │Безусловный переход  │
+         │    │         │    │         │         │                     │
+         │34  │stk data │  - │   x     │    -    │Помещает на стек чис-│
+         │    │         │    │         │         │ло x; оно должно быть│
+         │    │         │    │         │         │записано в упакован- │
+         │    │         │    │         │         │ной форме.           │
+         │35 s│djnz     │  - │   -     │    -    │Если в регистре В не │
+         │    │         │    │         │         │0, то выполняется пе-│
+         │    │         │    │         │         │реход на s байтов, а │
+         │    │         │    │         │         │содержимое регистра В│
+         │    │         │    │         │         │уменьшается на 1.    │
+         │36  │lt zt    │  x │T или F  │    -    │Условие "МЕНЬШЕ НУЛЯ"│
+         │37  │gt z     │  x │T или F  │    -    │Условие "БОЛЬШЕ НУЛЯ"│
+         │38  │end calc │  - │   -     │    -    │Выход из калькулятора│
+         │39  │get argt │  x │2*asn(sin│   MO    │Вычисление формулы   │
+         │3A  │truncate │  x │sgn(x)*  │    -    │Выделение целой части│
+         │    │         │    │int(abs x│         │числа (округление "к │
+         │    │         │    │)        │         │нулю")               │
+         │3B  │execute B│  - │   -     │    -    │Выполнение той коман-│
+         │    │         │    │         │         │ды калькулятора, код │
+         │    │         │    │         │         │которой содержится   │
+         │    │         │    │         │         │в регистре В.        │
+         │3C  │e to fp  │  x │   ?     │    -    │Не работает по причи-│
+         │    │         │    │         │         │не ошибки в ПЗУ      │
+         │3D  │restack  │  x │   x     │    -    │Перевод целого числа │
+         │    │         │    │         │         │в действительное     │
+         └────┴─────────┴────┴─────────┴─────────┴─────────────────────┘
++                                 - 259 -
+
+
+                     4. СЛОВАРЬ МНЕМОНИК АССЕМБЛЕРА
+
+              Ниже мы даем в алфавитном порядке все мнемоники машинного
+         кода процессора Z-80, их полную форму на английском языке, рус-
+         ский эквивалент и необходимые пояснения. Практика показывает,
+         что эта информация позволяет ускорить освоение системы команд
+         процессора начинающими.
+
+              ADC - ADDITION with CARRY = СЛОЖЕНИЕ с учетом ПЕРЕНОСА.
+         (Операция сложения с учетом состояния флага переноса - флага С
+         регистра F).
+              ADD - ADDITION = СЛОЖЕНИЕ.
+              AND = логическое "И".
+              BIT - test BIT = Проверить БИТ. (Выполнется проверка вклю-
+         чен или нет данный бит в регистре или в ячейке памяти).
+              CALL = ВЫЗОВ. (Вызывается исполнение подпрограммы).
+              CCF - COMPLEMENT CARRY FLAG = ДОПОЛНИТЬ (до единицы)  ФЛАГ
+         ПЕРЕНОСА. (Эта команда вызывает изменение состояние флага пере-
+         носа на противоположное).
+              CP - COMPARE = СРАВНИТЬ.
+              CPD  -  COMPARE  and  DECREMENT  = СРАВНИТЬ и УМЕНЬШИТЬ на
+         единицу.  (Сравнивается  содержимое  аккумулятора  с содержимым
+         ячейки памяти, адрес которой  находится в процессоре. Если  они
+         не равны, то адрес и счетчик уменьшаются на единицу).
+              CPDR - COMPARE, DECREMENT and REPEAT = СРАВНИТЬ, УМЕНЬШИТЬ
+         на единицу и ПОВТОРИТЬ. (Сравнивается содержимое аккумулятора с
+         содержимым заданной ячейки памяти. Если они не равны, то  адрес
+         и счетчик уменьшаются на единицу и процесс повторяется).
+              CPI  -  COMPARE  and  INCREMENT  = СРАВНИТЬ и УВЕЛИЧИТЬ на
+         единицу.  (Сравнивается  содержимое  аккумулятора  с содержимым
+         заданной ячейки памяти. Если они не равны, то адрес  увеличива-
+         ется на единицу, а счетчик уменьшается на единицу).
+              CPIR - COMPARE, INCREMENT and REPEAT = СРАВНИТЬ, УВЕЛИЧИТЬ
+         на ЕДИНИЦУ и ПОВТОРИТЬ. Сравнивается содержимое аккумулятора с
+         содержимым ячейки памяти, адрес которой находится в процессоре.
+         Если они не равны, то адрес увеличивается на единицу, а счетчик
+         уменьшается на единицу и процесс повторяется).
+              CPL - COMPLEMENT = ДОПОЛНИТЬ аккумулятор. (Каждый бит  ак-
